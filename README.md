@@ -1,5 +1,5 @@
 # Pay
-=====
+===
 
 It is "Pay Ywet". UI theme for Yan's Note admin panel.
 

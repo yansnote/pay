@@ -23,5 +23,8 @@
   "homepage": "https://github.com/yansnote/pay#readme",
   "dependencies": {
     "laravel-mix": "^4.0.16"
+  },
+  "devDependencies": {
+    "cross-env": "^5.2.0"
   }
 }
