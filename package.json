@@ -1,0 +1,27 @@
+{
+  "name": "pay",
+  "version": "1.0.0",
+  "description": "Admin panel theme for Yan's Note project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yansnote/pay.git"
+  },
+  "keywords": [
+    "admin",
+    "theme",
+    "yansnote"
+  ],
+  "author": "Yan Naing",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yansnote/pay/issues"
+  },
+  "homepage": "https://github.com/yansnote/pay#readme",
+  "dependencies": {
+    "laravel-mix": "^4.0.16"
+  }
+}
