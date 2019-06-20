@@ -4,7 +4,8 @@
   "description": "Admin panel theme for Yan's Note project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,11 @@
     "laravel-mix": "^4.0.16"
   },
   "devDependencies": {
-    "cross-env": "^5.2.0"
+    "bootstrap": "^4.3.1",
+    "cross-env": "^5.2.0",
+    "resolve-url-loader": "^2.3.1",
+    "sass": "^1.21.0",
+    "sass-loader": "^7.1.0",
+    "vue-template-compiler": "^2.6.10"
   }
 }
