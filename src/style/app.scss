@@ -3,6 +3,16 @@
 @import 'variables';
 
 @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Nunito', sans-serif;
+}
 
 body {
     background: $base-color;
@@ -14,17 +24,34 @@ body {
     width: 100%;
 
     .sidebar {
-        width: 250px;
+        width: 20%;
+        max-width: 250px;
         background: $sidebar-color;
         height: 100%;
         color: white;
+
+        ul {
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            list-style: none;
+
+            a {
+                color: #ced4da;
+                padding: 0.75rem 1.5rem;
+                text-decoration: none;
+
+                &:hover {
+                    background: #2D3646;
+                    color: #e9ecef;
+                }
+            }
+        }
     }
 
     .content {
-        .content-title {
-            h1 {
-                font-family: 'Nunito', sans-serif;
-            }
-        }
+        width: 100%;
     }
 }
