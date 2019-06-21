@@ -1,7 +1,30 @@
-@import 'variables';
-
 @import '~bootstrap/scss/bootstrap';
 
+@import 'variables';
+
+@import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
+
 body {
-    background-color: $base-color;
+    background: $base-color;
+}
+
+.wrapper {
+    align-items: stretch;
+    display: flex;
+    width: 100%;
+
+    .sidebar {
+        width: 250px;
+        background: $sidebar-color;
+        height: 100%;
+        color: white;
+    }
+
+    .content {
+        .content-title {
+            h1 {
+                font-family: 'Nunito', sans-serif;
+            }
+        }
+    }
 }

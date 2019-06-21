@@ -11,25 +11,23 @@
 
 
 </head>
-<body id="#pay-vue">
+<body id="pay-vue">
     
-    <div class="container-fluid">
+    <div id="main">
+        <div class="wrapper">
 
-        <div class="row flex-xl-nowrap">
+            <aside class="sidebar">
+                <p>This is sidebar</p>
+            </aside> <!-- end of sidebar -->
 
-            <aside class="col-12 col-md-3 col-xl-2 bd-sidebar">
+            <aside class="content">
+                <header class="content-title">
+                    <h1>Dashboard</h1>
+                </header> <!-- end of content-title -->
+            </aside> <!-- end of content -->
 
-                <p>Sidebar</p>
-
-            </aside> <!-- end of col-12 col-md-3 col-xl-2 bd-sidebar -->
-
-            <aside class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content">
-                <p>This one is testing</p>
-            </aside> <!-- end of col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content -->
-
-        </div> <!-- end of row flex-xl-nowrap -->
-
-    </div> <!-- end of container-fluid -->
+        </div> <!-- end of wrapper -->
+    </div> <!-- end of main -->
 
     <script src="../dist/app.js"></script>
 </body>
