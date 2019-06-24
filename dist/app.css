@@ -11181,3 +11181,11 @@ body {
   width: 100%;
 }
 
+.wrapper .content .content-title {
+  padding: 1.5em 2.5em 1em;
+}
+
+.wrapper .content .content-body {
+  padding: 0 2.5em;
+}
+

@@ -53,5 +53,13 @@ body {
 
     .content {
         width: 100%;
+
+        .content-title {
+            padding: 1.5em 2.5em 1em;
+        }
+
+        .content-body {
+            padding: 0 2.5em;
+        }
     }
 }
