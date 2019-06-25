@@ -32820,22 +32820,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tiptap__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tiptap */ "./node_modules/tiptap/dist/tiptap.esm.js");
 
 new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
-  el: '#pay-vue'
+  el: '#payvue',
+  data: {
+    message: 'Hello There! This is Vue.'
+  }
 });
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {
-    EditorContent: tiptap__WEBPACK_IMPORTED_MODULE_1__["EditorContent"]
-  },
-  data: function data() {
-    return {
-      editor: new tiptap__WEBPACK_IMPORTED_MODULE_1__["Editor"]({
-        content: '<p>Initial editor content</p>'
-      })
-    };
-  },
-  beforeDestroy: function beforeDestroy() {
-    this.editor.destroy();
+    Editor: tiptap__WEBPACK_IMPORTED_MODULE_1__["Editor"]
   }
 });
 

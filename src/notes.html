@@ -11,8 +11,8 @@
 
 
 </head>
-<body id="pay-vue">
-    
+<body>
+
     <div id="main">
         <div class="wrapper">
 
@@ -30,7 +30,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="d-flex">
+                            <a href="notes.html" class="d-flex">
                                 <i class="material-icons mr-3">create</i>
                                 Notes
                             </a>
@@ -59,15 +59,21 @@
 
             <aside class="content">
                 <header class="content-title">
-                    <h1>Notes</h1>
+                    <h1>Dashboard</h1>
                 </header> <!-- end of content-title -->
 
                 <section class="content-body">
-                    
-                    <template>
-                        <editor-content :editor="editor" />
-                    <template>
+                    <div id="payvue">
 
+                        <template>
+                            <editor>
+                                <div slot="content" slot-scope="props">
+                                    <p>Hi, I'm just a boring paragraph</p>
+                                </div>
+                            </editor>
+                        </template>
+
+                    </div> <!-- end of payvue -->
                 </section> <!-- end of content-body -->
             </aside> <!-- end of content -->
 

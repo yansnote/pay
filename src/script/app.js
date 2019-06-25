@@ -1,24 +1,15 @@
 import Vue from 'vue';
 
 new Vue({
-    el: '#pay-vue'
+    el: '#payvue',
+    data: {
+      message: 'Hello There! This is Vue.'
+    }
 });
 
-
-import { Editor, EditorContent } from 'tiptap'
-
+import { Editor } from 'tiptap'
 export default {
   components: {
-    EditorContent,
-  },
-  data() {
-    return {
-      editor: new Editor({
-        content: '<p>Initial editor content</p>'
-      })
-    }
-  },
-  beforeDestroy() {
-    this.editor.destroy()
+    Editor,
   },
 }
