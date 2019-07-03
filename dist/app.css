@@ -11189,3 +11189,26 @@ body {
   padding: 0 2.5em;
 }
 
+.wrapper .content .content-body .note-list {
+  padding-left: 0;
+}
+
+.wrapper .content .content-body .note-list .notes {
+  list-style: none;
+  padding-top: 1.3em;
+  border-bottom: 1px solid #dde1e4;
+}
+
+.wrapper .content .content-body .note-list .note-info {
+  padding-left: 0;
+}
+
+.wrapper .content .content-body .note-list .note-info .infos {
+  list-style: none;
+  padding-right: 1.2em;
+}
+
+.wrapper .content .content-body .note-list .note-info .infos i {
+  padding-right: 0.3em;
+}
+

@@ -60,6 +60,29 @@ body {
 
         .content-body {
             padding: 0 2.5em;
+
+            .note-list {
+                padding-left: 0;
+
+                .notes {
+                    list-style: none;
+                    padding-top: 1.3em;
+                    border-bottom: 1px solid #E5E9F2;
+                }
+
+                .note-info {
+                    padding-left: 0;
+
+                    .infos {
+                        list-style: none;
+                        padding-right: 1.2em;
+
+                        i {
+                            padding-right: .3em;
+                        }
+                    }
+                }
+            }
         }
     }
 }
