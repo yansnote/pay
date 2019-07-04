@@ -30,36 +30,7 @@ body {
     height: 100%;
     overflow: hidden;
 
-    .sidebar {
-        width: $sidebar-width;
-        background: $sidebar-color;
-        height: 100%;
-        color: white;
-        position: fixed;
-        top: 0;
-        left: 0;
-        overflow-x: hidden;
-
-        ul {
-            padding: 0;
-            margin: 0;
-        }
-
-        li {
-            list-style: none;
-
-            a {
-                color: #ced4da;
-                padding: 0.75rem 1.5rem;
-                text-decoration: none;
-
-                &:hover {
-                    background: #2D3646;
-                    color: #e9ecef;
-                }
-            }
-        }
-    }
+    @import 'sidebar';
 
     .content {
         width: 100%;

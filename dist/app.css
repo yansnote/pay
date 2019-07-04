@@ -11170,19 +11170,25 @@ body {
   margin: 0;
 }
 
-.wrapper .sidebar li {
+.wrapper .sidebar ul li {
   list-style: none;
 }
 
-.wrapper .sidebar li a {
+.wrapper .sidebar ul li a {
   color: #ced4da;
   padding: 0.75rem 1.5rem;
   text-decoration: none;
 }
 
-.wrapper .sidebar li a:hover {
+.wrapper .sidebar ul li a:hover {
   background: #2D3646;
   color: #e9ecef;
+}
+
+.wrapper .sidebar #sidebar-profile {
+  position: fixed;
+  bottom: 0;
+  padding: 0.5em;
 }
 
 .wrapper .content {
