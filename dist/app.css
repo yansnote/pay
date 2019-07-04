@@ -11149,17 +11149,21 @@ body {
 .wrapper {
   -webkit-align-items: stretch;
           align-items: stretch;
-  display: -webkit-flex;
-  display: flex;
+  position: relative;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .wrapper .sidebar {
-  width: 20%;
-  max-width: 250px;
+  width: 250px;
   background: #354052;
   height: 100%;
   color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
 
 .wrapper .sidebar ul {
@@ -11184,6 +11188,7 @@ body {
 
 .wrapper .content {
   width: 100%;
+  margin-left: 265px;
 }
 
 .wrapper .content .content-title {
