@@ -1414,6 +1414,7 @@ function arrow(axis, dir) {
 }
 
 function handleClick(view, pos, event) {
+  if (view.someProp("editable", function (editable) { return editable(view.state) === false; })) { return false }
   var $pos = view.state.doc.resolve(pos);
   if (!GapCursor.valid($pos)) { return false }
   var ref = view.posAtCoords({left: event.clientX, top: event.clientY});
@@ -18765,7 +18766,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tiptap_commands__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! tiptap-commands */ "./node_modules/tiptap-commands/dist/commands.esm.js");
 
     /*!
-    * tiptap v1.22.3
+    * tiptap v1.22.7
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18988,6 +18989,7 @@ function () {
     this.isNode = !!this.node.marks;
     this.isMark = !this.isNode;
     this.getPos = this.isMark ? this.getMarkPos : getPos;
+    this.captureEvents = true;
     this.dom = this.createDOM();
     this.contentDOM = this.vm.$refs.content;
   }
@@ -19093,18 +19095,36 @@ function () {
   }, {
     key: "stopEvent",
     value: function stopEvent(event) {
+      var _this3 = this;
+
       if (typeof this.extension.stopEvent === 'function') {
         return this.extension.stopEvent(event);
       }
 
-      var isPaste = event.type === 'paste';
-      var draggable = !!this.extension.schema.draggable;
+      var draggable = !!this.extension.schema.draggable; // support a custom drag handle
 
-      if (draggable || isPaste) {
+      if (draggable && event.type === 'mousedown') {
+        var dragHandle = event.target.closest && event.target.closest('[data-drag-handle]');
+        var isValidDragHandle = dragHandle && (this.dom === dragHandle || this.dom.contains(dragHandle));
+
+        if (isValidDragHandle) {
+          this.captureEvents = false;
+          document.addEventListener('dragend', function () {
+            _this3.captureEvents = true;
+          }, {
+            once: true
+          });
+        }
+      }
+
+      var isPaste = event.type === 'paste';
+      var isDrag = event.type.startsWith('drag') || event.type === 'drop';
+
+      if (draggable && isDrag || isPaste) {
         return false;
       }
 
-      return true;
+      return this.captureEvents;
     }
   }, {
     key: "selectNode",
@@ -19687,7 +19707,7 @@ function (_Node) {
   return Text;
 }(Node);
 
-var css = ".ProseMirror {\n  position: relative;\n}\n\n.ProseMirror {\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  -webkit-font-variant-ligatures: none;\n  font-variant-ligatures: none;\n}\n\n.ProseMirror pre {\n  white-space: pre-wrap;\n}\n\n.ProseMirror-gapcursor {\n  display: none;\n  pointer-events: none;\n  position: absolute;\n}\n\n.ProseMirror-gapcursor:after {\n  content: \"\";\n  display: block;\n  position: absolute;\n  top: -2px;\n  width: 20px;\n  border-top: 1px solid black;\n  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;\n}\n\n@keyframes ProseMirror-cursor-blink {\n  to {\n    visibility: hidden;\n  }\n}\n\n.ProseMirror-focused .ProseMirror-gapcursor {\n  display: block;\n}\n";
+var css = ".ProseMirror {\n  position: relative;\n}\n\n.ProseMirror {\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  -webkit-font-variant-ligatures: none;\n  font-variant-ligatures: none;\n}\n\n.ProseMirror pre {\n  white-space: pre-wrap;\n}\n\n.ProseMirror-gapcursor {\n  display: none;\n  pointer-events: none;\n  position: absolute;\n}\n\n.ProseMirror-gapcursor:after {\n  content: \"\";\n  display: block;\n  position: absolute;\n  top: -2px;\n  width: 20px;\n  border-top: 1px solid black;\n  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;\n}\n\n@keyframes ProseMirror-cursor-blink {\n  to {\n    visibility: hidden;\n  }\n}\n\n.ProseMirror-hideselection *::selection {\n  background: transparent;\n}\n\n.ProseMirror-hideselection *::-moz-selection {\n  background: transparent;\n}\n\n.ProseMirror-hideselection * {\n  caret-color: transparent;\n}\n\n.ProseMirror-focused .ProseMirror-gapcursor {\n  display: block;\n}\n";
 
 var Editor =
 /*#__PURE__*/
@@ -19708,6 +19728,7 @@ function (_Emitter) {
       autoFocus: null,
       extensions: [],
       content: '',
+      topNode: 'doc',
       emptyDocument: {
         type: 'doc',
         content: [{
@@ -19837,6 +19858,7 @@ function (_Emitter) {
     key: "createSchema",
     value: function createSchema() {
       return new prosemirror_model__WEBPACK_IMPORTED_MODULE_2__["Schema"]({
+        topNode: this.options.topNode,
         nodes: this.nodes,
         marks: this.marks
       });
@@ -20027,8 +20049,11 @@ function (_Emitter) {
         pos = 0;
       } else if (position === 'end') {
         pos = this.state.doc.nodeSize - 2;
-      }
+      } // selection should be inside of the document range
 
+
+      pos = Math.max(0, pos);
+      pos = Math.min(this.state.doc.nodeSize - 2, pos);
       var selection = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["TextSelection"].near(this.state.doc.resolve(pos));
       var transaction = this.state.tr.setSelection(selection);
       this.view.dispatch(transaction);

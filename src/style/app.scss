@@ -4,6 +4,7 @@
 
 @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://mmwebfonts.comquas.com/fonts/?font=notosan');
 
 h1,
 h2,
@@ -11,7 +12,12 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Nunito', 'Notosan Myanmar', sans-serif;
+}
+
+small,
+.small {
+    font-family: 'Notosan Myanmar', sans-serif;
 }
 
 body {
@@ -66,7 +72,7 @@ body {
 
                 .notes {
                     list-style: none;
-                    padding-top: 1.3em;
+                    padding: 1.3em 0 1em 0;
                     border-bottom: 1px solid #E5E9F2;
                 }
 

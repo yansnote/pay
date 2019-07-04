@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Nunito&display=swap);@import url(https://fonts.googleapis.com/icon?family=Material+Icons);@charset "UTF-8";
+@import url(https://fonts.googleapis.com/css?family=Nunito&display=swap);@import url(https://fonts.googleapis.com/icon?family=Material+Icons);@import url(https://mmwebfonts.comquas.com/fonts/?font=notosan);@charset "UTF-8";
 
 /*!
  * Bootstrap v4.3.1 (https://getbootstrap.com/)
@@ -11134,7 +11134,12 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Nunito", sans-serif;
+  font-family: "Nunito", "Notosan Myanmar", sans-serif;
+}
+
+small,
+.small {
+  font-family: "Notosan Myanmar", sans-serif;
 }
 
 body {
@@ -11195,8 +11200,8 @@ body {
 
 .wrapper .content .content-body .note-list .notes {
   list-style: none;
-  padding-top: 1.3em;
-  border-bottom: 1px solid #dde1e4;
+  padding: 1.3em 0 1em 0;
+  border-bottom: 1px solid #E5E9F2;
 }
 
 .wrapper .content .content-body .note-list .note-info {
