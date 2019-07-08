@@ -49,6 +49,15 @@ body {
                     list-style: none;
                     padding: 1.3em 0 1em 0;
                     border-bottom: 1px solid #E5E9F2;
+
+                    a {
+                        color: #333333;
+
+                        :hover {
+                            text-decoration: none;
+                            outline: none;
+                        }
+                    }
                 }
 
                 .note-info {

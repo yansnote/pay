@@ -11204,6 +11204,17 @@ body {
   margin: 0 auto;
 }
 
+.wrapper .sidebar #sidebar-profile .media-body {
+  font-size: 0.9rem;
+}
+
+.wrapper .sidebar #sidebar-profile .media-body a {
+  color: #e9ecef;
+  font-size: 1rem;
+  font-weight: normal;
+  text-transform: capitalize;
+}
+
 .wrapper .sidebar #sidebar-profile h5 {
   font-size: 14pt;
   font-weight: 700;
@@ -11226,6 +11237,15 @@ body {
   list-style: none;
   padding: 1.3em 0 1em 0;
   border-bottom: 1px solid #E5E9F2;
+}
+
+.wrapper .content .content-body .note-list .notes a {
+  color: #333333;
+}
+
+.wrapper .content .content-body .note-list .notes a :hover {
+  text-decoration: none;
+  outline: none;
 }
 
 .wrapper .content .content-body .note-list .note-info {
