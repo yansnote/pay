@@ -11165,22 +11165,29 @@ body {
   overflow-x: hidden;
 }
 
-.wrapper .sidebar ul {
+.wrapper .sidebar .navigation {
+  -webkit-flex-grow: 1;
+          flex-grow: 1;
+  overflow-y: auto;
+  height: calc(100% - 100px);
+}
+
+.wrapper .sidebar .navigation ul {
   padding: 0;
   margin: 0;
 }
 
-.wrapper .sidebar ul li {
+.wrapper .sidebar .navigation ul li {
   list-style: none;
 }
 
-.wrapper .sidebar ul li a {
+.wrapper .sidebar .navigation ul li a {
   color: #ced4da;
   padding: 0.75rem 1.5rem;
   text-decoration: none;
 }
 
-.wrapper .sidebar ul li a:hover {
+.wrapper .sidebar .navigation ul li a:hover {
   background: #2D3646;
   color: #e9ecef;
 }
@@ -11188,7 +11195,18 @@ body {
 .wrapper .sidebar #sidebar-profile {
   position: fixed;
   bottom: 0;
-  padding: 0.5em;
+  background: #313b4c;
+  width: 250px;
+  padding: 0.7em 1em;
+}
+
+.wrapper .sidebar #sidebar-profile .media {
+  margin: 0 auto;
+}
+
+.wrapper .sidebar #sidebar-profile h5 {
+  font-size: 14pt;
+  font-weight: 700;
 }
 
 .wrapper .content {

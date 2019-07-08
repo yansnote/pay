@@ -8,21 +8,28 @@
     left: 0;
     overflow-x: hidden;
 
-    ul {
-        padding: 0;
-        margin: 0;
+    .navigation {
 
-        li {
-            list-style: none;
-    
-            a {
-                color: #ced4da;
-                padding: 0.75rem 1.5rem;
-                text-decoration: none;
-    
-                &:hover {
-                    background: #2D3646;
-                    color: #e9ecef;
+        flex-grow: 1;
+        overflow-y: auto;
+        height: calc(100% - 100px);
+
+        ul {
+            padding: 0;
+            margin: 0;
+
+            li {
+                list-style: none;
+        
+                a {
+                    color: #ced4da;
+                    padding: 0.75rem 1.5rem;
+                    text-decoration: none;
+        
+                    &:hover {
+                        background: #2D3646;
+                        color: #e9ecef;
+                    }
                 }
             }
         }
@@ -32,5 +39,21 @@
         position: fixed;
         bottom: 0;
         background: #313b4c;
+        width: $sidebar-width;
+        padding: 0.7em 1em;
+
+        .media {
+            margin: 0 auto;
+        }
+
+        .media-body {
+            a {
+                
+            }
+        }
+        h5 {
+            font-size: 14pt;
+            font-weight: 700;
+        }
     }
 }
