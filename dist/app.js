@@ -32840,20 +32840,11 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
-/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var tiptap__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tiptap */ "./node_modules/tiptap/dist/tiptap.esm.js");
-
+/* harmony import */ var tiptap__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tiptap */ "./node_modules/tiptap/dist/tiptap.esm.js");
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {
-    Editor: tiptap__WEBPACK_IMPORTED_MODULE_1__["Editor"]
-  }
-});
-new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
-  el: '#payvue',
-  data: {
-    message: 'Hello There! This is Vue.'
+    Editor: tiptap__WEBPACK_IMPORTED_MODULE_0__["Editor"]
   }
 });
 

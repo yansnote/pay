@@ -88,9 +88,18 @@
                 </header> <!-- end of content-title -->
 
                 <section class="content-body">
-                    
-                    
+                    <div id="notevue">
 
+                            <template>
+                                <editor>
+                                    <!-- Add HTML to the scoped slot called `content` -->
+                                    <div slot="content" slot-scope="props">
+                                    <p>Hi, I'm just a boring paragraph</p>
+                                    </div>
+                                </editor>
+                            </template>
+
+                    </div>
                 </section> <!-- end of content-body -->
             </aside> <!-- end of content -->
 
@@ -98,5 +107,6 @@
     </div> <!-- end of main -->
 
     <script src="../dist/app.js"></script>
+
 </body>
 </html>
