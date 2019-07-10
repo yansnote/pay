@@ -1,7 +1,6 @@
 # Pay
-===
 
-It is "Pay Ywet". UI theme for Yan's Note admin panel.
+It is "Pay Ywet (ပေရွက်)". UI theme for Yan's Note admin panel.
 
 ### Dependencies
 
@@ -9,3 +8,5 @@ It is "Pay Ywet". UI theme for Yan's Note admin panel.
 - NPM
 - Webpack
 - Laravel Mix
+
+Run ` npm run dev ` and open .html files in the root directory.
