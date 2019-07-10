@@ -9,22 +9,27 @@
     overflow-x: hidden;
 
     .sidebar-title {
-        padding: 0.7em 1em;
+        padding: 1.4em 1em;
 
         .media {
-            
-            a {
-                font-size: 0.9rem;
-                color: #ced4da;
-
-                & :hover {
-                    text-decoration: none;
-                    color: white;
-                }
-            }
             img {
                 width: 32px;
                 height: 32px;
+            }
+        }
+
+        a {
+            color: #ced4da;
+            top: 28px;
+            right: 0;
+
+            & :hover {
+                text-decoration: none;
+                color: white;
+            }
+
+            i {
+                font-size: 1.2rem;
             }
         }
     }

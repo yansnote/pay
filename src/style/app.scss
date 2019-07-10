@@ -53,9 +53,10 @@ body {
                     a {
                         color: #333333;
 
-                        :hover {
+                        &:hover {
                             text-decoration: none;
-                            outline: none;
+                            color: #000000;
+                            font-weight: 500;
                         }
                     }
                 }

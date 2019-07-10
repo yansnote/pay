@@ -11166,22 +11166,27 @@ body {
 }
 
 .wrapper .sidebar .sidebar-title {
-  padding: 0.7em 1em;
-}
-
-.wrapper .sidebar .sidebar-title .media a {
-  font-size: 0.9rem;
-  color: #ced4da;
-}
-
-.wrapper .sidebar .sidebar-title .media a :hover {
-  text-decoration: none;
-  color: white;
+  padding: 1.4em 1em;
 }
 
 .wrapper .sidebar .sidebar-title .media img {
   width: 32px;
   height: 32px;
+}
+
+.wrapper .sidebar .sidebar-title a {
+  color: #ced4da;
+  top: 28px;
+  right: 0;
+}
+
+.wrapper .sidebar .sidebar-title a :hover {
+  text-decoration: none;
+  color: white;
+}
+
+.wrapper .sidebar .sidebar-title a i {
+  font-size: 1.2rem;
 }
 
 .wrapper .sidebar .navigation {
@@ -11262,9 +11267,10 @@ body {
   color: #333333;
 }
 
-.wrapper .content .content-body .note-list .notes a :hover {
+.wrapper .content .content-body .note-list .notes a:hover {
   text-decoration: none;
-  outline: none;
+  color: #000000;
+  font-weight: 500;
 }
 
 .wrapper .content .content-body .note-list .note-info {
