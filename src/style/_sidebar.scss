@@ -2,7 +2,7 @@
     width: $sidebar-width;
     border-right: 1px solid #e0e0e0;
     //background: $sidebar-color;
-    background: $primary-50;
+    background: theme-color("pay-0");
     height: 100%;
     color: white;
     position: fixed;
@@ -55,8 +55,8 @@
                     text-decoration: none;
         
                     &:hover {
-                        background: #2D3646;
-                        color: #e9ecef;
+                        background: theme-color-level(pay-0, 3);
+                        //color: #e9ecef;
                     }
                 }
 

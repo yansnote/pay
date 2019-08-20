@@ -6029,6 +6029,8 @@ var Transaction = (function (Transform$$1) {
   // Update the transaction's current selection. Will determine the
   // selection that the editor gets when the transaction is applied.
   Transaction.prototype.setSelection = function setSelection (selection) {
+    if (selection.$from.doc != this.doc)
+      { throw new RangeError("Selection passed to setSelection must point at the current document") }
     this.curSelection = selection;
     this.curSelectionFor = this.steps.length;
     this.updated = (this.updated | UPDATED_SEL) & ~UPDATED_MARKS;
@@ -6698,10 +6700,12 @@ var TableMap = function TableMap(width, height, map, problems) {
 // :: (number) → Rect
 // Find the dimensions of the cell at the given position.
 TableMap.prototype.findCell = function findCell (pos) {
+    var this$1 = this;
+
   for (var i = 0; i < this.map.length; i++) {
-    var curPos = this.map[i];
+    var curPos = this$1.map[i];
     if (curPos != pos) { continue }
-    var left = i % this.width, top = (i / this.width) | 0;
+    var left = i % this$1.width, top = (i / this$1.width) | 0;
     var right = left + 1, bottom = top + 1;
     for (var j = 1; right < this.width && this.map[i + j] == curPos; j++) { right++; }
     for (var j$1 = 1; bottom < this.height && this.map[i + (this.width * j$1)] == curPos; j$1++) { bottom++; }
@@ -6713,8 +6717,10 @@ TableMap.prototype.findCell = function findCell (pos) {
 // :: (number) → number
 // Find the left side of the cell at the given position.
 TableMap.prototype.colCount = function colCount (pos) {
+    var this$1 = this;
+
   for (var i = 0; i < this.map.length; i++)
-    { if (this.map[i] == pos) { return i % this.width } }
+    { if (this$1.map[i] == pos) { return i % this$1.width } }
   throw new RangeError("No cell with offset " + pos + " found")
 };
 
@@ -6757,14 +6763,16 @@ TableMap.prototype.rectBetween = function rectBetween (a, b) {
 // Return the position of all cells that have the top left corner in
 // the given rectangle.
 TableMap.prototype.cellsInRect = function cellsInRect (rect) {
+    var this$1 = this;
+
   var result = [], seen = {};
   for (var row = rect.top; row < rect.bottom; row++) {
     for (var col = rect.left; col < rect.right; col++) {
-      var index = row * this.width + col, pos = this.map[index];
+      var index = row * this$1.width + col, pos = this$1.map[index];
       if (seen[pos]) { continue }
       seen[pos] = true;
-      if ((col != rect.left || !col || this.map[index - 1] != pos) &&
-          (row != rect.top || !row || this.map[index - this.width] != pos))
+      if ((col != rect.left || !col || this$1.map[index - 1] != pos) &&
+          (row != rect.top || !row || this$1.map[index - this$1.width] != pos))
         { result.push(pos); }
     }
   }
@@ -6775,13 +6783,15 @@ TableMap.prototype.cellsInRect = function cellsInRect (rect) {
 // Return the position at which the cell at the given row and column
 // starts, or would start, if a cell started there.
 TableMap.prototype.positionAt = function positionAt (row, col, table) {
+    var this$1 = this;
+
   for (var i = 0, rowStart = 0;; i++) {
     var rowEnd = rowStart + table.child(i).nodeSize;
     if (i == row) {
-      var index = col + row * this.width, rowEndIndex = (row + 1) * this.width;
+      var index = col + row * this$1.width, rowEndIndex = (row + 1) * this$1.width;
       // Skip past cells from previous rows (via rowspan)
       while (index < rowEndIndex && this.map[index] < rowStart) { index++; }
-      return index == rowEndIndex ? rowEnd - 1 : this.map[index]
+      return index == rowEndIndex ? rowEnd - 1 : this$1.map[index]
     }
     rowStart = rowEnd;
   }
@@ -7010,7 +7020,7 @@ function addColSpan(attrs, pos, n) {
 // With the plugin enabled, these will be created when the user
 // selects across cells, and will be drawn by giving selected cells a
 // `selectedCell` CSS class.
-var CellSelection = /*@__PURE__*/(function (Selection) {
+var CellSelection = (function (Selection) {
   function CellSelection($anchorCell, $headCell) {
     if ( $headCell === void 0 ) $headCell = $anchorCell;
 
@@ -8225,48 +8235,59 @@ function mergeCells(state, dispatch) {
   }
   return true
 }
-
 // :: (EditorState, dispatch: ?(tr: Transaction)) → bool
 // Split a selected cell, whose rowpan or colspan is greater than one,
-// into smaller cells.
+// into smaller cells. Use the first cell type for the new cells.
 function splitCell(state, dispatch) {
-  var sel = state.selection;
-  var cellNode, cellPos;
-  if (!(sel instanceof CellSelection)) {
-    cellNode = cellWrapping(sel.$from);
-    if (!cellNode) { return false }
-    cellPos = cellAround(sel.$from).pos;
-  } else {
-    if (sel.$anchorCell.pos != sel.$headCell.pos) { return false }
-    cellNode = sel.$anchorCell.nodeAfter;
-    cellPos = sel.$anchorCell.pos;
-  }
-  if (cellNode.attrs.colspan == 1 && cellNode.attrs.rowspan == 1) {return false}
-  if (dispatch) {
-    var baseAttrs = cellNode.attrs, attrs = [], colwidth = baseAttrs.colwidth;
-    if (baseAttrs.rowspan > 1) { baseAttrs = setAttr(baseAttrs, "rowspan", 1); }
-    if (baseAttrs.colspan > 1) { baseAttrs = setAttr(baseAttrs, "colspan", 1); }
-    var rect = selectedRect(state), tr = state.tr;
-    for (var i = 0; i < rect.right - rect.left; i++)
-      { attrs.push(colwidth ? setAttr(baseAttrs, "colwidth", colwidth && colwidth[i] ? [colwidth[i]] : null) : baseAttrs); }
-    var lastCell, cellType = tableNodeTypes(state.schema)[cellNode.type.spec.tableRole];
-    for (var row = 0; row < rect.bottom; row++) {
-      if (row >= rect.top) {
+  var nodeTypes = tableNodeTypes(state.schema);
+  return splitCellWithType(function (ref) {
+    var node = ref.node;
+
+    return nodeTypes[node.type.spec.tableRole]
+  })(state, dispatch)
+}
+
+// :: (getCellType: ({ row: number, col: number, node: Node}) → NodeType) → (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Split a selected cell, whose rowpan or colspan is greater than one,
+// into smaller cells with the cell type (th, td) returned by getType function.
+function splitCellWithType(getCellType) {
+  return function (state, dispatch) {
+    var sel = state.selection;
+    var cellNode, cellPos;
+    if (!(sel instanceof CellSelection)) {
+      cellNode = cellWrapping(sel.$from);
+      if (!cellNode) { return false }
+      cellPos = cellAround(sel.$from).pos;
+    } else {
+      if (sel.$anchorCell.pos != sel.$headCell.pos) { return false }
+      cellNode = sel.$anchorCell.nodeAfter;
+      cellPos = sel.$anchorCell.pos;
+    }
+    if (cellNode.attrs.colspan == 1 && cellNode.attrs.rowspan == 1) {return false}
+    if (dispatch) {
+      var baseAttrs = cellNode.attrs, attrs = [], colwidth = baseAttrs.colwidth;
+      if (baseAttrs.rowspan > 1) { baseAttrs = setAttr(baseAttrs, "rowspan", 1); }
+      if (baseAttrs.colspan > 1) { baseAttrs = setAttr(baseAttrs, "colspan", 1); }
+      var rect = selectedRect(state), tr = state.tr;
+      for (var i = 0; i < rect.right - rect.left; i++)
+        { attrs.push(colwidth ? setAttr(baseAttrs, "colwidth", colwidth && colwidth[i] ? [colwidth[i]] : null) : baseAttrs); }
+      var lastCell;
+      for (var row = rect.top; row < rect.bottom; row++) {
         var pos = rect.map.positionAt(row, rect.left, rect.table);
         if (row == rect.top) { pos += cellNode.nodeSize; }
         for (var col = rect.left, i$1 = 0; col < rect.right; col++, i$1++) {
           if (col == rect.left && row == rect.top) { continue }
-          tr.insert(lastCell = tr.mapping.map(pos + rect.tableStart, 1), cellType.createAndFill(attrs[i$1]));
+          tr.insert(lastCell = tr.mapping.map(pos + rect.tableStart, 1), getCellType({ node: cellNode, row: row, col: col}).createAndFill(attrs[i$1]));
         }
       }
+      tr.setNodeMarkup(cellPos, getCellType({ node: cellNode, row: rect.top, col: rect.left}), attrs[0]);
+      if (sel instanceof CellSelection)
+        { tr.setSelection(new CellSelection(tr.doc.resolve(sel.$anchorCell.pos),
+                                          lastCell && tr.doc.resolve(lastCell))); }
+      dispatch(tr);
     }
-    tr.setNodeMarkup(cellPos, null, attrs[0]);
-    if (sel instanceof CellSelection)
-      { tr.setSelection(new CellSelection(tr.doc.resolve(sel.$anchorCell.pos),
-                                        lastCell && tr.doc.resolve(lastCell))); }
-    dispatch(tr);
+    return true
   }
-  return true
 }
 
 // :: (string, any) → (EditorState, dispatch: ?(tr: Transaction)) → bool
@@ -8818,6 +8839,7 @@ exports.removeRow = removeRow;
 exports.deleteRow = deleteRow;
 exports.mergeCells = mergeCells;
 exports.splitCell = splitCell;
+exports.splitCellWithType = splitCellWithType;
 exports.setCellAttr = setCellAttr;
 exports.toggleHeader = toggleHeader;
 exports.toggleHeaderRow = toggleHeaderRow;
@@ -12866,8 +12888,8 @@ exports.removeNodeBefore = removeNodeBefore;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var prosemirrorModel = __webpack_require__(/*! prosemirror-model */ "./node_modules/prosemirror-model/dist/index.js");
 var prosemirrorState = __webpack_require__(/*! prosemirror-state */ "./node_modules/prosemirror-state/dist/index.js");
+var prosemirrorModel = __webpack_require__(/*! prosemirror-model */ "./node_modules/prosemirror-model/dist/index.js");
 var prosemirrorTransform = __webpack_require__(/*! prosemirror-transform */ "./node_modules/prosemirror-transform/dist/index.js");
 
 var result = {};
@@ -12923,7 +12945,7 @@ var atomElements = /^(img|br|input|textarea|hr)$/i;
 function scanFor(node, off, targetNode, targetOff, dir) {
   for (;;) {
     if (node == targetNode && off == targetOff) { return true }
-    if (off == (dir < 0 ? 0 : nodeSize(node)) || node.nodeType == 3 && node.nodeValue == "\ufeff") {
+    if (off == (dir < 0 ? 0 : nodeSize(node))) {
       var parent = node.parentNode;
       if (parent.nodeType != 1 || hasBlockDesc(node) || atomElements.test(node.nodeName) || node.contentEditable == "false")
         { return false }
@@ -13185,6 +13207,9 @@ function posAtCoords(view, coords) {
   }
   elt = targetKludge(elt, coords);
   if (node) {
+    // Firefox will sometimes return offsets into <input> nodes, which
+    // have no actual children, from caretPositionFromPoint (#953)
+    if (node.nodeType == 1) { offset = Math.min(offset, node.childNodes.length); }
     // Suspiciously specific kludge to work around caret*FromPoint
     // never returning a position at the end of the document
     if (node == view.dom && offset == node.childNodes.length - 1 && node.lastChild.nodeType == 1 &&
@@ -13349,6 +13374,7 @@ function endOfTextblockHorizontal(view, state, dir) {
     // textblock (or doesn't move it at all, when at the start/end of
     // the document).
     var oldRange = sel.getRangeAt(0), oldNode = sel.focusNode, oldOff = sel.focusOffset;
+    var oldBidiLevel = sel.caretBidiLevel; // Only for Firefox
     sel.modify("move", dir, "character");
     var parentDOM = $head.depth ? view.docView.domAfterPos($head.before()) : view.dom;
     var result$$1 = !parentDOM.contains(sel.focusNode.nodeType == 1 ? sel.focusNode : sel.focusNode.parentNode) ||
@@ -13356,6 +13382,7 @@ function endOfTextblockHorizontal(view, state, dir) {
     // Restore the previous selection
     sel.removeAllRanges();
     sel.addRange(oldRange);
+    if (oldBidiLevel != null) { sel.caretBidiLevel = oldBidiLevel; }
     return result$$1
   })
 }
@@ -13427,7 +13454,10 @@ function endOfTextblock(view, state, dir) {
 //   ignoreMutation:: ?(dom.MutationRecord) → bool
 //   Called when a DOM
 //   [mutation](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
-//   happens within the view. Return false if the editor should
+//   or a selection change happens within the view. When the change is
+//   a selection change, the record will have a `type` property of
+//   `"selection"` (which doesn't occur for native mutation records).
+//   Return false if the editor should re-read the selection or
 //   re-parse the range around the mutation, true if it can safely be
 //   ignored.
 //
@@ -13853,26 +13883,6 @@ var WidgetViewDesc = (function (ViewDesc) {
   return WidgetViewDesc;
 }(ViewDesc));
 
-// A cursor wrapper is used to put the cursor in when newly typed text
-// needs to be styled differently from its surrounding text (for
-// example through storedMarks), so that the style of the text doesn't
-// visually 'pop' between typing it and actually updating the view.
-var CursorWrapperDesc = (function (WidgetViewDesc) {
-  function CursorWrapperDesc () {
-    WidgetViewDesc.apply(this, arguments);
-  }
-
-  if ( WidgetViewDesc ) CursorWrapperDesc.__proto__ = WidgetViewDesc;
-  CursorWrapperDesc.prototype = Object.create( WidgetViewDesc && WidgetViewDesc.prototype );
-  CursorWrapperDesc.prototype.constructor = CursorWrapperDesc;
-
-  CursorWrapperDesc.prototype.parseRule = function parseRule () { return {skip: withoutZeroWidthSpaces(this.dom)} };
-
-  CursorWrapperDesc.prototype.ignoreMutation = function ignoreMutation () { return false };
-
-  return CursorWrapperDesc;
-}(WidgetViewDesc));
-
 var CompositionViewDesc = (function (ViewDesc) {
   function CompositionViewDesc(parent, dom, textDOM, text) {
     ViewDesc.call(this, parent, nothing, dom, null);
@@ -13888,20 +13898,18 @@ var CompositionViewDesc = (function (ViewDesc) {
 
   prototypeAccessors$2.size.get = function () { return this.text.length };
 
-  CompositionViewDesc.prototype.parseRule = function parseRule () { return {skip: withoutZeroWidthSpaces(this.dom)} };
-
   CompositionViewDesc.prototype.localPosFromDOM = function localPosFromDOM (dom, offset) {
     if (dom != this.textDOM) { return this.posAtStart + (offset ? this.size : 0) }
-    var zwsp = this.textDOM.nodeValue.indexOf("\ufeff");
-    return this.posAtStart + offset - (zwsp > -1 && zwsp < offset ? 1 : 0)
+    return this.posAtStart + offset
   };
 
   CompositionViewDesc.prototype.domFromPos = function domFromPos (pos) {
-    var zwsp = this.textDOM.nodeValue.indexOf("\ufeff");
-    return {node: this.textDOM, offset: pos + (zwsp > -1 && zwsp <= pos ? 1 : 0)}
+    return {node: this.textDOM, offset: pos}
   };
 
-  CompositionViewDesc.prototype.ignoreMutation = function ignoreMutation () { return false };
+  CompositionViewDesc.prototype.ignoreMutation = function ignoreMutation (mut) {
+    return mut.type === 'characterData' && mut.target.nodeValue == mut.oldValue
+   };
 
   Object.defineProperties( CompositionViewDesc.prototype, prototypeAccessors$2 );
 
@@ -14109,7 +14117,7 @@ var NodeViewDesc = (function (ViewDesc) {
     // Find the text in the focused node in the node, stop if it's not
     // there (may have been modified through other means, in which
     // case it should overwritten)
-    var text = textNode.nodeValue.replace(/\ufeff/g, "");
+    var text = textNode.nodeValue;
     var textPos = findTextInFragment(this.node.content, text, from - pos, to - pos);
 
     return textPos < 0 ? null : {node: textNode, pos: textPos, text: text}
@@ -14236,7 +14244,7 @@ var TextViewDesc = (function (NodeViewDesc) {
   };
 
   TextViewDesc.prototype.ignoreMutation = function ignoreMutation (mutation) {
-    return mutation.type != "characterData"
+    return mutation.type != "characterData" && mutation.type != "selection"
   };
 
   TextViewDesc.prototype.slice = function slice (from, to, view) {
@@ -14511,7 +14519,7 @@ ViewTreeUpdater.prototype.syncToMarks = function syncToMarks (marks, inline, vie
     if (found > -1) {
       if (found > this$1.index) {
         this$1.changed = true;
-        this$1.top.children.splice(this$1.index, found - this$1.index);
+        this$1.destroyBetween(this$1.index, found);
       }
       this$1.top = this$1.top.children[this$1.index];
     } else {
@@ -14586,16 +14594,10 @@ ViewTreeUpdater.prototype.placeWidget = function placeWidget (widget, view, pos)
   if (this.index < this.top.children.length && this.top.children[this.index].matchesWidget(widget)) {
     this.index++;
   } else {
-    var desc = new (widget.spec.isCursorWrapper ? CursorWrapperDesc : WidgetViewDesc)(this.top, widget, view, pos);
+    var desc = new WidgetViewDesc(this.top, widget, view, pos);
     this.top.children.splice(this.index++, 0, desc);
     this.changed = true;
   }
-};
-
-ViewTreeUpdater.prototype.placeComposition = function placeComposition (view, desc) {
-  this.syncToMarks(nothing, true, view);
-  if (this.top.children[this.index] == desc) { this.index++; }
-  else { this.top.children.splice(this.index++, 0, desc); this.changed = true; }
 };
 
 // Make sure a textblock looks and behaves correctly in
@@ -14716,6 +14718,8 @@ function nearbyTextNode(node, offset) {
   for (;;) {
     if (node.nodeType == 3) { return node }
     if (node.nodeType == 1 && offset > 0) {
+      if (node.childNodes.length > offset && node.childNodes[offset].nodeType == 3)
+        { return node.childNodes[offset] }
       node = node.childNodes[offset - 1];
       offset = nodeSize(node);
     } else if (node.nodeType == 1 && offset < node.childNodes.length) {
@@ -14738,7 +14742,7 @@ function findTextInFragment(frag, text, from, to) {
         while (found > -1 && strStart + found > from) { found = str.lastIndexOf(text, found - 1); }
         if (found > -1 && strStart + found + text.length >= to) {
           return strStart + found
-        } else if (end > to - text.length) {
+        } else if (end > to) {
           break
         }
       }
@@ -14771,18 +14775,6 @@ function replaceNodes(nodes, from, to, view, replacement) {
     }
   }
   return result$$1
-}
-
-function withoutZeroWidthSpaces(dom) {
-  var clone = dom.cloneNode(true);
-  function scan(node) {
-    if (node.nodeType == 1)
-      { for (var child = node.firstChild; child; child = child.nextSibling) { scan(child); } }
-    else if (node.nodeType == 3)
-      { node.nodeValue = node.nodeValue.replace(/\ufeff/g, ""); }
-  }
-  scan(clone);
-  return clone
 }
 
 function moveSelectionBlock(state, dir) {
@@ -14856,13 +14848,7 @@ function skipIgnoredNodesLeft(view) {
   for (;;) {
     if (offset > 0) {
       if (node.nodeType != 1) {
-        if (node.nodeType == 3 && node.nodeValue.charAt(offset - 1) == "\ufeff") {
-          // IE11's cursor will still be stuck when placed at the
-          // beginning of the cursor wrapper text node (#807)
-          if (result.ie && result.ie_version <= 11) { force = true; }
-          moveNode = node;
-          moveOffset = --offset;
-        } else { break }
+        break
       } else {
         var before = node.childNodes[offset - 1];
         if (isIgnorable(before)) {
@@ -15093,7 +15079,7 @@ function selectionToDOM(view, takeFocus, force) {
       view.dom.focus();
       view.domObserver.connectSelection();
     }
-  } else if (!view.editable && !hasSelection(view) && !takeFocus) {
+  } else if (!view.editable && !(hasSelection(view) && document.activeElement.contains(view.dom)) && !takeFocus) {
     return
   }
 
@@ -15166,8 +15152,9 @@ function removeClassOnSelectionChange(view) {
 
 function selectCursorWrapper(view) {
   var domSel = view.root.getSelection(), range = document.createRange();
-  var node = view.cursorWrapper.dom;
-  range.setEnd(node, node.childNodes.length);
+  var node = view.cursorWrapper.dom, img = node.nodeName == "IMG";
+  if (img) { range.setEnd(node.parentNode, domIndex(node) + 1); }
+  else { range.setEnd(node, 0); }
   range.collapse(false);
   domSel.removeAllRanges();
   domSel.addRange(range);
@@ -15176,7 +15163,7 @@ function selectCursorWrapper(view) {
   // resize handles and a selection that considers the absolutely
   // positioned wrapper, rather than the root editable node, the
   // focused element.
-  if (!view.state.selection.visible && result.ie && result.ie_version <= 11) {
+  if (!img && !view.state.selection.visible && result.ie && result.ie_version <= 11) {
     node.disabled = true;
     node.disabled = false;
   }
@@ -15226,23 +15213,6 @@ function hasSelection(view) {
   } catch(_) {
     return false
   }
-}
-
-function nonInclusiveMark(mark) {
-  return mark.type.spec.inclusive === false
-}
-
-function needsCursorWrapper(state) {
-  var ref = state.selection;
-  var $head = ref.$head;
-  var $anchor = ref.$anchor;
-  var visible = ref.visible;
-  var $pos = $head.pos == $anchor.pos && (!visible || $head.parent.inlineContent) ? $head : null;
-  if ($pos && (!visible || state.storedMarks || $pos.parent.content.length == 0 ||
-               $pos.parentOffset && !$pos.textOffset && $pos.nodeBefore.marks.some(nonInclusiveMark)))
-    { return $pos }
-  else
-    { return null }
 }
 
 function anchorInRightPlace(view) {
@@ -15316,6 +15286,8 @@ function ruleFromNode(parser, context) {
         { return parser.matchTag(document.createElement("li"), context) }
       else if (dom.parentNode.lastChild == dom || result.safari && /^(tr|table)$/i.test(dom.parentNode.nodeName))
         { return {ignore: true} }
+    } else if (dom.nodeName == "IMG" && dom.getAttribute("mark-placeholder")) {
+      return {ignore: true}
     }
   }
 }
@@ -15596,10 +15568,10 @@ function parseFromClipboard(view, text, html, plainText, $context) {
     slice = parser.parseSlice(dom, {preserveWhitespace: !!(asText || sliceData), context: $context});
   }
   if (sliceData)
-    { slice = addContext(new prosemirrorModel.Slice(slice.content, Math.min(slice.openStart, +sliceData[1]),
-                                 Math.min(slice.openEnd, +sliceData[2])), sliceData[3]); }
+    { slice = addContext(closeSlice(slice, +sliceData[1], +sliceData[2]), sliceData[3]); }
   else // HTML wasn't created by ProseMirror. Make sure top-level siblings are coherent
     { slice = prosemirrorModel.Slice.maxOpen(normalizeSiblings(slice.content, $context), false); }
+
   view.someProp("transformPasted", function (f) { slice = f(slice); });
   return slice
 }
@@ -15670,6 +15642,23 @@ function closeRight(node, depth) {
   return node.copy(fragment.append(fill))
 }
 
+function closeRange(fragment, side, from, to, depth, openEnd) {
+  var node = side < 0 ? fragment.firstChild : fragment.lastChild, inner = node.content;
+  if (depth < to - 1) { inner = closeRange(inner, side, from, to, depth + 1, openEnd); }
+  if (depth >= from)
+    { inner = side < 0 ? node.contentMatchAt(0).fillBefore(inner, fragment.childCount > 1 || openEnd <= depth).append(inner)
+      : inner.append(node.contentMatchAt(node.childCount).fillBefore(prosemirrorModel.Fragment.empty, true)); }
+  return fragment.replaceChild(side < 0 ? 0 : fragment.childCount - 1, node.copy(inner))
+}
+
+function closeSlice(slice, openStart, openEnd) {
+  if (openStart < slice.openStart)
+    { slice = new prosemirrorModel.Slice(closeRange(slice.content, -1, openStart, slice.openStart, 0, slice.openEnd), openStart, slice.openEnd); }
+  if (openEnd < slice.openEnd)
+    { slice = new prosemirrorModel.Slice(closeRange(slice.content, 1, openEnd, slice.openEnd, 0, 0), slice.openStart, openEnd); }
+  return slice
+}
+
 // Trick from jQuery -- some elements must be wrapped in other
 // elements for innerHTML to work. I.e. if you do `div.innerHTML =
 // "<td>..</td>"` the table cells are ignored.
@@ -15732,7 +15721,17 @@ var DOMObserver = function DOMObserver(view, handleDOMChange) {
   this.view = view;
   this.handleDOMChange = handleDOMChange;
   this.observer = window.MutationObserver &&
-    new window.MutationObserver(function (mutations) { return this$1.flush(mutations); });
+    new window.MutationObserver(function (mutations) {
+      // IE11 will sometimes (on backspacing out a single character
+      // text node after a BR node) call the observer callback
+      // before actually updating the DOM, which will cause
+      // ProseMirror to miss the change (see #930)
+      if (result.ie && result.ie_version <= 11 && mutations.some(
+        function (m) { return m.type == "childList" && m.removedNodes.length == 1 && m.removedNodes[0].parentNode == m.target; }))
+        { setTimeout(function () { return this$1.flush(mutations); }, 10); }
+      else
+        { this$1.flush(mutations); }
+    });
   this.currentSelection = new SelectionState;
   this.queue = [];
   if (useCharData) {
@@ -15791,6 +15790,13 @@ DOMObserver.prototype.setCurSelection = function setCurSelection () {
   this.currentSelection.set(this.view.root.getSelection());
 };
 
+DOMObserver.prototype.ignoreSelectionChange = function ignoreSelectionChange (sel) {
+  if (sel.rangeCount == 0) { return true }
+  var container = sel.getRangeAt(0).commonAncestorContainer;
+  var desc = this.view.docView.nearestDesc(container);
+  return desc && desc.ignoreMutation({type: "selection", target: container.nodeType == 3 ? container.parentNode : container})
+};
+
 DOMObserver.prototype.flush = function flush (mutations) {
     var this$1 = this;
 
@@ -15802,7 +15808,7 @@ DOMObserver.prototype.flush = function flush (mutations) {
   }
 
   var sel = this.view.root.getSelection();
-  var newSel = !this.suppressingSelectionUpdates && !this.currentSelection.eq(sel) && hasSelection(this.view);
+  var newSel = !this.suppressingSelectionUpdates && !this.currentSelection.eq(sel) && hasSelection(this.view) && !this.ignoreSelectionChange(sel);
 
   var from = -1, to = -1, typeOver = false;
   if (this.view.editable) {
@@ -15811,7 +15817,7 @@ DOMObserver.prototype.flush = function flush (mutations) {
       if (result$$1) {
         from = from < 0 ? result$$1.from : Math.min(result$$1.from, from);
         to = to < 0 ? result$$1.to : Math.max(result$$1.to, to);
-        if (result$$1.typeOver) { typeOver = true; }
+        if (result$$1.typeOver && !this$1.view.composing) { typeOver = true; }
       }
     }
   }
@@ -15826,7 +15832,10 @@ DOMObserver.prototype.flush = function flush (mutations) {
 DOMObserver.prototype.registerMutation = function registerMutation (mut) {
   var desc = this.view.docView.nearestDesc(mut.target);
   if (mut.type == "attributes" &&
-      (desc == this.view.docView || mut.attributeName == "contenteditable")) { return null }
+      (desc == this.view.docView || mut.attributeName == "contenteditable" ||
+       // Firefox sometimes fires spurious events for null/empty styles
+       (mut.attributeName == "style" && !mut.oldValue && !mut.target.getAttribute("style"))))
+    { return null }
   if (!desc || desc.ignoreMutation(mut)) { return null }
 
   if (mut.type == "childList") {
@@ -16174,8 +16183,6 @@ MouseDown.prototype.up = function up (event) {
   if (this.view.state.doc != this.startDoc) { pos = this.view.posAtCoords(eventCoords(event)); }
 
   if (this.allowDefault || !pos) {
-    // Force a cursor wrapper redraw if this was suppressed (to avoid an issue with IE drag-selection)
-    if (result.ie && needsCursorWrapper(this.view.state)) { this.view.updateState(this.view.state); }
     setSelectionOrigin(this.view, "pointer");
   } else if (handleSingleClick(this.view, pos.pos, pos.inside, event, this.selectNode)) {
     event.preventDefault();
@@ -16235,7 +16242,33 @@ var timeoutComposition = result.android ? 5000 : -1;
 editHandlers.compositionstart = editHandlers.compositionupdate = function (view) {
   if (!view.composing) {
     view.domObserver.flush();
-    endComposition(view);
+    var state = view.state;
+    var $pos = state.selection.$from;
+    if (state.selection.empty &&
+        (state.storedMarks || (!$pos.textOffset && $pos.parentOffset && $pos.nodeBefore.marks.some(function (m) { return m.type.spec.inclusive === false; })))) {
+      // Need to wrap the cursor in mark nodes different from the ones in the DOM context
+      view.markCursor = view.state.storedMarks || $pos.marks();
+      endComposition(view, true);
+      view.markCursor = null;
+    } else {
+      endComposition(view);
+      // In firefox, if the cursor is after but outside a marked node,
+      // the inserted text won't inherit the marks. So this moves it
+      // inside if necessary.
+      if (result.gecko && state.selection.empty && $pos.parentOffset && !$pos.textOffset && $pos.nodeBefore.marks.length) {
+        var sel = view.root.getSelection();
+        for (var node = sel.focusNode, offset = sel.focusOffset; node && node.nodeType == 1 && offset != 0;) {
+          var before = offset < 0 ? node.lastChild : node.childNodes[offset - 1];
+          if (before.nodeType == 3) {
+            sel.collapse(before, before.nodeValue.length);
+            break
+          } else {
+            node = before;
+            offset = -1;
+          }
+        }
+      }
+    }
     view.composing = true;
   }
   scheduleComposeEnd(view, timeoutComposition);
@@ -16254,10 +16287,10 @@ function scheduleComposeEnd(view, delay) {
   if (delay > -1) { view.composingTimeout = setTimeout(function () { return endComposition(view); }, delay); }
 }
 
-function endComposition(view) {
+function endComposition(view, forceUpdate) {
   view.composing = false;
   while (view.compositionNodes.length > 0) { view.compositionNodes.pop().markParentsDirty(); }
-  if (view.docView.dirty) {
+  if (forceUpdate || view.docView.dirty) {
     view.updateState(view.state);
     return true
   }
@@ -16867,7 +16900,7 @@ DecorationSet.prototype.eq = function eq (other) {
     { if (this$1.children[i$1] != other.children[i$1] ||
         this$1.children[i$1 + 1] != other.children[i$1 + 1] ||
         !this$1.children[i$1 + 2].eq(other.children[i$1 + 2])) { return false } }
-  return false
+  return true
 };
 
 DecorationSet.prototype.locals = function locals (node) {
@@ -17182,6 +17215,7 @@ var EditorView = function EditorView(place, props) {
   }
 
   this.editable = getEditable(this);
+  this.markCursor = null;
   this.cursorWrapper = null;
   updateCursorWrapper(this);
   this.nodeViews = buildNodeViews(this);
@@ -17289,7 +17323,7 @@ EditorView.prototype.updateStateInner = function updateStateInner (state, reconf
         this.docView = docViewDesc(state.doc, outerDeco, innerDeco, this.dom, this);
       }
       if (startSelContext)
-        { forceSelUpdate = needChromeSelectionForce(startSelContext, this.root); }
+        { forceSelUpdate = !this.composing && needChromeSelectionForce(startSelContext, this.root); }
     }
     // Work around for an issue where an update arriving right between
     // a DOM selection change and the "selectionchange" event for it
@@ -17372,8 +17406,11 @@ EditorView.prototype.hasFocus = function hasFocus () {
 EditorView.prototype.focus = function focus () {
   this.domObserver.stop();
   selectionToDOM(this, true);
+  if (this.editable) {
+    if (this.dom.setActive) { this.dom.setActive(); } // for IE
+    else { this.dom.focus({preventScroll: true}); }
+  }
   this.domObserver.start();
-  if (this.editable) { this.dom.focus(); }
 };
 
 // :: union<dom.Document, dom.DocumentFragment>
@@ -17519,34 +17556,28 @@ function computeDocDeco(view) {
   return [Decoration.node(0, view.state.doc.content.size, attrs)]
 }
 
-function cursorWrapperDOM(visible) {
-  var span = document.createElement("span");
-  span.textContent = "\ufeff"; // zero-width non-breaking space
-  if (!visible) {
-    span.style.position = "absolute";
-    span.style.left = "-100000px";
-  }
-  return span
-}
-
 function updateCursorWrapper(view) {
-  var $pos = needsCursorWrapper(view.state);
-  // On IE/Edge, moving the DOM selection will abort a mouse drag, so
-  // there we delay the creation of the wrapper when the mouse is down.
-  if ($pos && !(result.ie && view.mouseDown)) {
-    var visible = view.state.selection.visible;
-    // Needs a cursor wrapper
-    var marks = view.state.storedMarks || $pos.marks(), dom;
-    if (!view.cursorWrapper || !prosemirrorModel.Mark.sameSet(view.cursorWrapper.deco.spec.marks, marks) ||
-        view.cursorWrapper.dom.textContent != "\ufeff" ||
-        view.cursorWrapper.deco.spec.visible != visible)
-      { dom = cursorWrapperDOM(visible); }
-    else if (view.cursorWrapper.deco.pos != $pos.pos)
-      { dom = view.cursorWrapper.dom; }
-    if (dom)
-      { view.cursorWrapper = {dom: dom, deco: Decoration.widget($pos.pos, dom, {isCursorWrapper: true, marks: marks, raw: true, visible: visible})}; }
-  } else {
+  var ref = view.state.selection;
+  var $head = ref.$head;
+  var $anchor = ref.$anchor;
+  var visible = ref.visible;
+  if (view.markCursor) {
+    var dom = document.createElement("img");
+    dom.setAttribute("mark-placeholder", "true");
+    view.cursorWrapper = {dom: dom, deco: Decoration.widget($head.pos, dom, {raw: true, marks: view.markCursor})};
+  } else if (visible || $head.pos != $anchor.pos) {
     view.cursorWrapper = null;
+  } else {
+    var dom$1;
+    if (!view.cursorWrapper || view.cursorWrapper.dom.childNodes.length) {
+      dom$1 = document.createElement("div");
+      dom$1.style.position = "absolute";
+      dom$1.style.left = "-100000px";
+    } else if (view.cursorWrapper.deco.pos != $head.pos) {
+      dom$1 = view.cursorWrapper.dom;
+    }
+    if (dom$1)
+      { view.cursorWrapper = {dom: dom$1, deco: Decoration.widget($head.pos, dom$1, {raw: true})}; }
   }
 }
 
@@ -18151,7 +18182,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var prosemirror_utils__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(prosemirror_utils__WEBPACK_IMPORTED_MODULE_6__);
 
     /*!
-    * tiptap-commands v1.10.8
+    * tiptap-commands v1.10.11
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18596,7 +18627,7 @@ function updateMark (type, attrs) {
 /*!*****************************************************!*\
   !*** ./node_modules/tiptap-utils/dist/utils.esm.js ***!
   \*****************************************************/
-/*! exports provided: getMarkAttrs, getMarkRange, markIsActive, nodeIsActive */
+/*! exports provided: getMarkAttrs, getMarkRange, markIsActive, nodeEqualsType, nodeIsActive */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18604,12 +18635,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getMarkAttrs", function() { return getMarkAttrs; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getMarkRange", function() { return getMarkRange; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "markIsActive", function() { return markIsActive; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nodeEqualsType", function() { return nodeEqualsType; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "nodeIsActive", function() { return nodeIsActive; });
 /* harmony import */ var prosemirror_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! prosemirror-utils */ "./node_modules/prosemirror-utils/dist/index.js");
 /* harmony import */ var prosemirror_utils__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(prosemirror_utils__WEBPACK_IMPORTED_MODULE_0__);
 
     /*!
-    * tiptap-utils v1.5.6
+    * tiptap-utils v1.6.0
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18636,7 +18668,7 @@ function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
-function getMarkAttrs (state, type) {
+function getMarkAttrs(state, type) {
   var _state$selection = state.selection,
       from = _state$selection.from,
       to = _state$selection.to;
@@ -18655,7 +18687,7 @@ function getMarkAttrs (state, type) {
   return {};
 }
 
-function getMarkRange () {
+function getMarkRange() {
   var $pos = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
@@ -18698,7 +18730,7 @@ function getMarkRange () {
   };
 }
 
-function markIsActive (state, type) {
+function markIsActive(state, type) {
   var _state$selection = state.selection,
       from = _state$selection.from,
       $from = _state$selection.$from,
@@ -18712,7 +18744,13 @@ function markIsActive (state, type) {
   return !!state.doc.rangeHasMark(from, to, type);
 }
 
-function nodeIsActive (state, type) {
+function nodeEqualsType(_ref) {
+  var types = _ref.types,
+      node = _ref.node;
+  return Array.isArray(types) && types.includes(node.type) || node.type === types;
+}
+
+function nodeIsActive(state, type) {
   var attrs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   var predicate = function predicate(node) {
@@ -18783,7 +18821,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tiptap_commands__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! tiptap-commands */ "./node_modules/tiptap-commands/dist/commands.esm.js");
 
     /*!
-    * tiptap v1.23.1
+    * tiptap v1.24.1
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18856,12 +18894,13 @@ function ownKeys(object, enumerableOnly) {
   var keys = Object.keys(object);
 
   if (Object.getOwnPropertySymbols) {
-    keys.push.apply(keys, Object.getOwnPropertySymbols(object));
+    var symbols = Object.getOwnPropertySymbols(object);
+    if (enumerableOnly) symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    });
+    keys.push.apply(keys, symbols);
   }
 
-  if (enumerableOnly) keys = keys.filter(function (sym) {
-    return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-  });
   return keys;
 }
 
@@ -19045,6 +19084,11 @@ function () {
           return _this.updateAttrs(attrs);
         }
       };
+
+      if (typeof this.extension.setSelection === 'function') {
+        this.setSelection = this.extension.setSelection;
+      }
+
       this.vm = new Component({
         parent: this.parent,
         propsData: props
@@ -19148,10 +19192,12 @@ function () {
         }
       }
 
+      var isCopy = event.type === 'copy';
       var isPaste = event.type === 'paste';
+      var isCut = event.type === 'cut';
       var isDrag = event.type.startsWith('drag') || event.type === 'drop';
 
-      if (draggable && isDrag || isPaste) {
+      if (draggable && isDrag || isCopy || isPaste || isCut) {
         return false;
       }
 
@@ -19600,6 +19646,13 @@ function (_Extension) {
   return Mark;
 }(Extension);
 
+function minMax() {
+  var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  var min = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+  var max = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  return Math.min(Math.max(parseInt(value, 10), min), max);
+}
+
 var Node =
 /*#__PURE__*/
 function (_Extension) {
@@ -19794,6 +19847,11 @@ function (_Emitter) {
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.setOptions(_objectSpread2({}, this.defaultOptions, {}, options));
+      this.focused = false;
+      this.selection = {
+        from: 0,
+        to: 0
+      };
       this.element = document.createElement('div');
       this.extensions = this.createExtensions();
       this.nodes = this.createNodes();
@@ -19920,18 +19978,30 @@ function (_Emitter) {
             },
             handleDOMEvents: {
               focus: function focus(view, event) {
+                _this3.focused = true;
+
                 _this3.emit('focus', {
                   event: event,
                   state: view.state,
                   view: view
                 });
+
+                var transaction = _this3.state.tr.setMeta('focused', true);
+
+                _this3.view.dispatch(transaction);
               },
               blur: function blur(view, event) {
+                _this3.focused = false;
+
                 _this3.emit('blur', {
                   event: event,
                   state: view.state,
                   view: view
                 });
+
+                var transaction = _this3.state.tr.setMeta('focused', false);
+
+                _this3.view.dispatch(transaction);
               }
             }
           }
@@ -20039,6 +20109,10 @@ function (_Emitter) {
     value: function dispatchTransaction(transaction) {
       var newState = this.state.apply(transaction);
       this.view.updateState(newState);
+      this.selection = {
+        from: this.state.selection.from,
+        to: this.state.selection.to
+      };
       this.setActiveNodesAndMarks();
       this.emit('transaction', {
         getHTML: this.getHTML.bind(this),
@@ -20064,33 +20138,67 @@ function (_Emitter) {
       });
     }
   }, {
+    key: "resolveSelection",
+    value: function resolveSelection() {
+      var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      if (this.selection && position === null) {
+        return this.selection;
+      }
+
+      if (position === 'start') {
+        return {
+          from: 0,
+          to: 0
+        };
+      }
+
+      if (position === 'end') {
+        var doc = this.state.doc;
+        return {
+          from: doc.content.size,
+          to: doc.content.size
+        };
+      }
+
+      return {
+        from: position,
+        to: position
+      };
+    }
+  }, {
     key: "focus",
     value: function focus() {
       var _this6 = this;
 
       var position = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      if (position === null || position === false) {
+      if (this.view.focused && position === null || position === false) {
         return;
       }
 
-      var pos = position;
+      var _this$resolveSelectio = this.resolveSelection(position),
+          from = _this$resolveSelectio.from,
+          to = _this$resolveSelectio.to;
 
-      if (position === 'start' || position === true) {
-        pos = 0;
-      } else if (position === 'end') {
-        pos = this.state.doc.nodeSize - 2;
-      } // selection should be inside of the document range
-
-
-      pos = Math.max(0, pos);
-      pos = Math.min(this.state.doc.nodeSize - 2, pos);
-      var selection = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["TextSelection"].near(this.state.doc.resolve(pos));
-      var transaction = this.state.tr.setSelection(selection);
-      this.view.dispatch(transaction);
+      this.setSelection(from, to);
       setTimeout(function () {
         return _this6.view.focus();
       }, 10);
+    }
+  }, {
+    key: "setSelection",
+    value: function setSelection() {
+      var from = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+      var to = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      var _this$state = this.state,
+          doc = _this$state.doc,
+          tr = _this$state.tr;
+      var resolvedFrom = minMax(from, 0, doc.content.size);
+      var resolvedEnd = minMax(to, 0, doc.content.size);
+      var selection = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["TextSelection"].create(doc, resolvedFrom, resolvedEnd);
+      var transaction = tr.setSelection(selection);
+      this.view.dispatch(transaction);
     }
   }, {
     key: "blur",
@@ -20124,9 +20232,9 @@ function (_Emitter) {
       var content = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var emitUpdate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var parseOptions = arguments.length > 2 ? arguments[2] : undefined;
-      var _this$state = this.state,
-          doc = _this$state.doc,
-          tr = _this$state.tr;
+      var _this$state2 = this.state,
+          doc = _this$state2.doc,
+          tr = _this$state2.tr;
       var document = this.createDocument(content, parseOptions);
       var selection = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["TextSelection"].create(doc, 0, doc.content.size);
       var transaction = tr.setSelection(selection).replaceSelectionWith(document, false).setMeta('preventUpdate', !emitUpdate);
@@ -20280,11 +20388,68 @@ var EditorContent = {
   }
 };
 
+var Menu =
+/*#__PURE__*/
+function () {
+  function Menu(_ref) {
+    var options = _ref.options;
+
+    _classCallCheck(this, Menu);
+
+    this.options = options; // the mousedown event is fired before blur so we can prevent it
+
+    this.options.element.addEventListener('mousedown', this.handleClick);
+  }
+
+  _createClass(Menu, [{
+    key: "handleClick",
+    value: function handleClick(event) {
+      event.preventDefault();
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      this.options.element.removeEventListener('mousedown', this.handleClick);
+    }
+  }]);
+
+  return Menu;
+}();
+
+function MenuBar (options) {
+  return new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["Plugin"]({
+    key: new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["PluginKey"]('menu_bar'),
+    view: function view(editorView) {
+      return new Menu({
+        editorView: editorView,
+        options: options
+      });
+    }
+  });
+}
+
 var EditorMenuBar = {
   props: {
     editor: {
       default: null,
       type: Object
+    }
+  },
+  watch: {
+    editor: {
+      immediate: true,
+      handler: function handler(editor) {
+        var _this = this;
+
+        if (editor) {
+          this.$nextTick(function () {
+            editor.registerPlugin(MenuBar({
+              editor: editor,
+              element: _this.$el
+            }));
+          });
+        }
+      }
     }
   },
   render: function render() {
@@ -20358,7 +20523,7 @@ function coordsAtPos(view, pos) {
   };
 }
 
-var Menu =
+var Menu$1 =
 /*#__PURE__*/
 function () {
   function Menu(_ref) {
@@ -20429,7 +20594,14 @@ function () {
       var start = coordsAtPos(view, from);
       var end = coordsAtPos(view, to, true); // The box in which the tooltip is positioned, to use as base
 
-      var box = this.options.element.offsetParent.getBoundingClientRect();
+      var parent = this.options.element.offsetParent;
+
+      if (!parent) {
+        this.hide();
+        return;
+      }
+
+      var box = parent.getBoundingClientRect();
       var el = this.options.element.getBoundingClientRect(); // Find a center-ish x position from the selection endpoints (when
       // crossing lines, end may be more to the left)
 
@@ -20473,7 +20645,7 @@ function MenuBubble (options) {
   return new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["Plugin"]({
     key: new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["PluginKey"]('menu_bubble'),
     view: function view(editorView) {
-      return new Menu({
+      return new Menu$1({
         editorView: editorView,
         options: options
       });
@@ -20548,7 +20720,7 @@ var EditorMenuBubble = {
   }
 };
 
-var Menu$1 =
+var Menu$2 =
 /*#__PURE__*/
 function () {
   function Menu(_ref) {
@@ -20620,7 +20792,14 @@ function () {
         return;
       }
 
-      var editorBoundings = this.options.element.offsetParent.getBoundingClientRect();
+      var parent = this.options.element.offsetParent;
+
+      if (!parent) {
+        this.hide();
+        return;
+      }
+
+      var editorBoundings = parent.getBoundingClientRect();
       var cursorBoundings = view.coordsAtPos(state.selection.anchor);
       var top = cursorBoundings.top - editorBoundings.top;
       this.isActive = true;
@@ -20663,7 +20842,7 @@ function FloatingMenu (options) {
   return new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["Plugin"]({
     key: new prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["PluginKey"]('floating_menu'),
     view: function view(editorView) {
-      return new Menu$1({
+      return new Menu$2({
         editorView: editorView,
         options: options
       });
