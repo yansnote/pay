@@ -10652,7 +10652,7 @@ var removeSelectedNode = function removeSelectedNode(tr) {
   return tr;
 };
 
-// :: (node: ProseMirrorNode) → (tr: Transaction) → Transaction
+// :: (content: union<ProseMirrorNode, ProseMirrorFragment>) → (tr: Transaction) → Transaction
 // Returns a new transaction that replaces selected node with a given `node`, keeping NodeSelection on the new `node`.
 // It will return the original transaction if either current selection is not a NodeSelection or replacing is not possible.
 //
@@ -10662,17 +10662,17 @@ var removeSelectedNode = function removeSelectedNode(tr) {
 //   replaceSelectedNode(node)(tr)
 // );
 // ```
-var replaceSelectedNode = function replaceSelectedNode(node) {
+var replaceSelectedNode = function replaceSelectedNode(content) {
   return function (tr) {
     if (isNodeSelection(tr.selection)) {
       var _tr$selection = tr.selection,
           $from = _tr$selection.$from,
           $to = _tr$selection.$to;
 
-      if ($from.parent.canReplaceWith($from.index(), $from.indexAfter(), node.type)) {
-        return cloneTr(tr.replaceWith($from.pos, $to.pos, node)
+      if (content instanceof prosemirrorModel.Fragment && $from.parent.canReplace($from.index(), $from.indexAfter(), content) || $from.parent.canReplaceWith($from.index(), $from.indexAfter(), content.type)) {
+        return cloneTr(tr.replaceWith($from.pos, $to.pos, content)
         // restore node selection
-        .setSelection(new prosemirrorState.NodeSelection($from)));
+        .setSelection(new prosemirrorState.NodeSelection(tr.doc.resolve($from.pos))));
       }
     }
     return tr;
@@ -10703,9 +10703,12 @@ var setTextSelection = function setTextSelection(position) {
 var isSelectableNode = function isSelectableNode(node) {
   return node.type && node.type.spec.selectable;
 };
+var shouldSelectNode = function shouldSelectNode(node) {
+  return isSelectableNode(node) && node.type.isLeaf;
+};
 
 var setSelection = function setSelection(node, pos, tr) {
-  if (isSelectableNode(node)) {
+  if (shouldSelectNode(node)) {
     return tr.setSelection(new prosemirrorState.NodeSelection(tr.doc.resolve(pos)));
   }
   return setTextSelection(pos)(tr);
@@ -11785,9 +11788,11 @@ var selectTable = function selectTable(tr) {
 var emptyCell = function emptyCell(cell, schema) {
   return function (tr) {
     if (cell) {
-      var content = tableNodeTypes(schema).cell.createAndFill().content;
+      var _tableNodeTypes$cell$ = tableNodeTypes(schema).cell.createAndFill(),
+          content = _tableNodeTypes$cell$.content;
+
       if (!cell.node.content.eq(content)) {
-        tr.replaceWith(cell.pos, cell.pos + cell.node.nodeSize - 1, new prosemirrorModel.Slice(content, 0, 0));
+        tr.replaceWith(cell.pos + 1, cell.pos + cell.node.nodeSize, content);
         return cloneTr(tr);
       }
     }
@@ -13636,8 +13641,9 @@ ViewDesc.prototype.domFromPos = function domFromPos (pos) {
   if (!this.contentDOM) { return {node: this.dom, offset: 0} }
   for (var offset = 0, i = 0;; i++) {
     if (offset == pos) {
-      while (i < this.children.length && this.children[i].beforePosition) { i++; }
-      return {node: this$1.contentDOM, offset: i}
+      while (i < this.children.length && (this.children[i].beforePosition || this.children[i].dom.parentNode != this.contentDOM)) { i++; }
+      return {node: this$1.contentDOM,
+              offset: i == this$1.children.length ? this$1.contentDOM.childNodes.length : domIndex(this$1.children[i].dom)}
     }
     if (i == this$1.children.length) { throw new Error("Invalid position " + pos) }
     var child = this$1.children[i], end = offset + child.size;
@@ -13656,16 +13662,16 @@ ViewDesc.prototype.parseRange = function parseRange (from, to, base) {
     { return {node: this.contentDOM, from: from, to: to, fromOffset: 0, toOffset: this.contentDOM.childNodes.length} }
 
   var fromOffset = -1, toOffset = -1;
-  for (var offset = 0, i = 0;; i++) {
+  for (var offset = base, i = 0;; i++) {
     var child = this$1.children[i], end = offset + child.size;
     if (fromOffset == -1 && from <= end) {
       var childBase = offset + child.border;
       // FIXME maybe descend mark views to parse a narrower range?
       if (from >= childBase && to <= end - child.border && child.node &&
           child.contentDOM && this$1.contentDOM.contains(child.contentDOM))
-        { return child.parseRange(from - childBase, to - childBase, base + childBase) }
+        { return child.parseRange(from, to, childBase) }
 
-      from = base + offset;
+      from = offset;
       for (var j = i; j > 0; j--) {
         var prev = this$1.children[j - 1];
         if (prev.size && prev.dom.parentNode == this$1.contentDOM && !prev.emptyChildAt(1)) {
@@ -13677,7 +13683,7 @@ ViewDesc.prototype.parseRange = function parseRange (from, to, base) {
       if (fromOffset == -1) { fromOffset = 0; }
     }
     if (fromOffset > -1 && to <= end) {
-      to = base + end;
+      to = end;
       for (var j$1 = i + 1; j$1 < this.children.length; j$1++) {
         var next = this$1.children[j$1];
         if (next.size && next.dom.parentNode == this$1.contentDOM && !next.emptyChildAt(-1)) {
@@ -15388,10 +15394,7 @@ function readDOMChange(view, from, to, typeOver) {
   if (view.state.selection.anchor > change.start &&
       looksLikeJoin(doc, change.start, change.endA, $from, $to) &&
       view.someProp("handleKeyDown", function (f) { return f(view, keyEvent(8, "Backspace")); })) {
-    if (result.android && result.chrome) { // #820
-      view.domObserver.suppressSelectionUpdates = true;
-      setTimeout(function () { return view.domObserver.suppressSelectionUpdates = false; }, 50);
-    }
+    if (result.android && result.chrome) { view.domObserver.suppressSelectionUpdates(); } // #820
     return
   }
 
@@ -15400,6 +15403,12 @@ function readDOMChange(view, from, to, typeOver) {
   var tr, storedMarks, markChange, $from1;
   if ($from.sameParent($to) && $from.parent.inlineContent) {
     if ($from.pos == $to.pos) { // Deletion
+      // IE11 sometimes weirdly moves the DOM selection around after
+      // backspacing out the first element in a textblock
+      if (result.ie && result.ie_version <= 11 && $from.parentOffset == 0) {
+        view.domObserver.suppressSelectionUpdates();
+        setTimeout(function () { return selectionToDOM(view); }, 20);
+      }
       tr = view.state.tr.delete(chFrom, chTo);
       storedMarks = doc.resolve(change.start).marksAcross(doc.resolve(change.endA));
     } else if ( // Adding or removing a mark
@@ -15733,6 +15742,7 @@ var DOMObserver = function DOMObserver(view, handleDOMChange) {
     };
   }
   this.onSelectionChange = this.onSelectionChange.bind(this);
+  this.suppressingSelectionUpdates = false;
 };
 
 DOMObserver.prototype.start = function start () {
@@ -15764,9 +15774,16 @@ DOMObserver.prototype.disconnectSelection = function disconnectSelection () {
   this.view.dom.ownerDocument.removeEventListener("selectionchange", this.onSelectionChange);
 };
 
+DOMObserver.prototype.suppressSelectionUpdates = function suppressSelectionUpdates () {
+    var this$1 = this;
+
+  this.suppressingSelectionUpdates = true;
+  setTimeout(function () { return this$1.suppressingSelectionUpdates = false; }, 50);
+};
+
 DOMObserver.prototype.onSelectionChange = function onSelectionChange () {
   if (!hasFocusAndSelection(this.view)) { return }
-  if (this.suppressSelectionUpdates) { return selectionToDOM(this.view) }
+  if (this.suppressingSelectionUpdates) { return selectionToDOM(this.view) }
   this.flush();
 };
 
@@ -15785,7 +15802,7 @@ DOMObserver.prototype.flush = function flush (mutations) {
   }
 
   var sel = this.view.root.getSelection();
-  var newSel = !this.currentSelection.eq(sel) && hasSelection(this.view);
+  var newSel = !this.suppressingSelectionUpdates && !this.currentSelection.eq(sel) && hasSelection(this.view);
 
   var from = -1, to = -1, typeOver = false;
   if (this.view.editable) {
@@ -18134,7 +18151,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var prosemirror_utils__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(prosemirror_utils__WEBPACK_IMPORTED_MODULE_6__);
 
     /*!
-    * tiptap-commands v1.10.7
+    * tiptap-commands v1.10.8
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18592,7 +18609,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var prosemirror_utils__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(prosemirror_utils__WEBPACK_IMPORTED_MODULE_0__);
 
     /*!
-    * tiptap-utils v1.5.5
+    * tiptap-utils v1.5.6
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18766,7 +18783,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tiptap_commands__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! tiptap-commands */ "./node_modules/tiptap-commands/dist/commands.esm.js");
 
     /*!
-    * tiptap v1.22.7
+    * tiptap v1.23.1
     * (c) 2019 Scrumpy UG (limited liability)
     * @license MIT
     */
@@ -18835,20 +18852,34 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
-function _objectSpread(target) {
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    keys.push.apply(keys, Object.getOwnPropertySymbols(object));
+  }
+
+  if (enumerableOnly) keys = keys.filter(function (sym) {
+    return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+  });
+  return keys;
+}
+
+function _objectSpread2(target) {
   for (var i = 1; i < arguments.length; i++) {
     var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
 
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
+    if (i % 2) {
+      ownKeys(source, true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(source).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
     }
-
-    ownKeys.forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    });
   }
 
   return target;
@@ -19075,7 +19106,7 @@ function () {
       var type = this.node.type;
       var pos = this.getPos();
 
-      var newAttrs = _objectSpread({}, this.node.attrs, attrs);
+      var newAttrs = _objectSpread2({}, this.node.attrs, {}, attrs);
 
       var transaction = this.isMark ? state.tr.removeMark(pos.from, pos.to, type).addMark(pos.from, pos.to, type.create(newAttrs)) : state.tr.setNodeMarkup(pos, null, newAttrs);
       this.view.dispatch(transaction);
@@ -19237,7 +19268,7 @@ function () {
 
     _classCallCheck(this, Extension);
 
-    this.options = _objectSpread({}, this.defaultOptions, options);
+    this.options = _objectSpread2({}, this.defaultOptions, {}, options);
   }
 
   _createClass(Extension, [{
@@ -19414,7 +19445,7 @@ function () {
         var name = extension.name,
             type = extension.type;
         var commands = {};
-        var value = extension.commands(_objectSpread({
+        var value = extension.commands(_objectSpread2({
           schema: schema
         }, ['node', 'mark'].includes(type) ? {
           type: schema["".concat(type, "s")][name]
@@ -19455,7 +19486,7 @@ function () {
           handle(name, value);
         }
 
-        return _objectSpread({}, allCommands, commands);
+        return _objectSpread2({}, allCommands, {}, commands);
       }, {});
     }
   }, {
@@ -19466,7 +19497,7 @@ function () {
       }).reduce(function (nodes, _ref7) {
         var name = _ref7.name,
             schema = _ref7.schema;
-        return _objectSpread({}, nodes, _defineProperty({}, name, schema));
+        return _objectSpread2({}, nodes, _defineProperty({}, name, schema));
       }, {});
     }
   }, {
@@ -19474,7 +19505,7 @@ function () {
     get: function get() {
       var view = this.view;
       return this.extensions.reduce(function (nodes, extension) {
-        return _objectSpread({}, nodes, _defineProperty({}, extension.name, new Proxy(extension.options, {
+        return _objectSpread2({}, nodes, _defineProperty({}, extension.name, new Proxy(extension.options, {
           set: function set(obj, prop, value) {
             var changed = obj[prop] !== value;
             Object.assign(obj, _defineProperty({}, prop, value));
@@ -19496,7 +19527,7 @@ function () {
       }).reduce(function (marks, _ref8) {
         var name = _ref8.name,
             schema = _ref8.schema;
-        return _objectSpread({}, marks, _defineProperty({}, name, schema));
+        return _objectSpread2({}, marks, _defineProperty({}, name, schema));
       }, {});
     }
   }, {
@@ -19762,7 +19793,7 @@ function (_Emitter) {
       var _this2 = this;
 
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      this.setOptions(_objectSpread({}, this.defaultOptions, options));
+      this.setOptions(_objectSpread2({}, this.defaultOptions, {}, options));
       this.element = document.createElement('div');
       this.extensions = this.createExtensions();
       this.nodes = this.createNodes();
@@ -19797,7 +19828,7 @@ function (_Emitter) {
   }, {
     key: "setOptions",
     value: function setOptions(options) {
-      this.options = _objectSpread({}, this.options, options);
+      this.options = _objectSpread2({}, this.options, {}, options);
 
       if (this.view && this.state) {
         this.view.updateState(this.state);
@@ -20000,7 +20031,7 @@ function (_Emitter) {
           });
         };
 
-        return _objectSpread({}, nodeViews, _defineProperty({}, extension.name, nodeView));
+        return _objectSpread2({}, nodeViews, _defineProperty({}, extension.name, nodeView));
       }, {});
     }
   }, {
@@ -20016,7 +20047,7 @@ function (_Emitter) {
         transaction: transaction
       });
 
-      if (!transaction.docChanged) {
+      if (!transaction.docChanged || transaction.getMeta('preventUpdate')) {
         return;
       }
 
@@ -20093,16 +20124,13 @@ function (_Emitter) {
       var content = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var emitUpdate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var parseOptions = arguments.length > 2 ? arguments[2] : undefined;
-      var newState = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["EditorState"].create({
-        schema: this.state.schema,
-        doc: this.createDocument(content, parseOptions),
-        plugins: this.state.plugins
-      });
-      this.view.updateState(newState);
-
-      if (emitUpdate) {
-        this.emitUpdate();
-      }
+      var _this$state = this.state,
+          doc = _this$state.doc,
+          tr = _this$state.tr;
+      var document = this.createDocument(content, parseOptions);
+      var selection = prosemirror_state__WEBPACK_IMPORTED_MODULE_0__["TextSelection"].create(doc, 0, doc.content.size);
+      var transaction = tr.setSelection(selection).replaceSelectionWith(document, false).setMeta('preventUpdate', !emitUpdate);
+      this.view.dispatch(transaction);
     }
   }, {
     key: "clearContent",
@@ -20120,7 +20148,7 @@ function (_Emitter) {
             name = _ref3[0],
             mark = _ref3[1];
 
-        return _objectSpread({}, marks, _defineProperty({}, name, function () {
+        return _objectSpread2({}, marks, _defineProperty({}, name, function () {
           var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return Object(tiptap_utils__WEBPACK_IMPORTED_MODULE_8__["markIsActive"])(_this7.state, mark, attrs);
         }));
@@ -20130,14 +20158,14 @@ function (_Emitter) {
             name = _ref5[0],
             mark = _ref5[1];
 
-        return _objectSpread({}, marks, _defineProperty({}, name, Object(tiptap_utils__WEBPACK_IMPORTED_MODULE_8__["getMarkAttrs"])(_this7.state, mark)));
+        return _objectSpread2({}, marks, _defineProperty({}, name, Object(tiptap_utils__WEBPACK_IMPORTED_MODULE_8__["getMarkAttrs"])(_this7.state, mark)));
       }, {});
       this.activeNodes = Object.entries(this.schema.nodes).reduce(function (nodes, _ref6) {
         var _ref7 = _slicedToArray(_ref6, 2),
             name = _ref7[0],
             node = _ref7[1];
 
-        return _objectSpread({}, nodes, _defineProperty({}, name, function () {
+        return _objectSpread2({}, nodes, _defineProperty({}, name, function () {
           var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return Object(tiptap_utils__WEBPACK_IMPORTED_MODULE_8__["nodeIsActive"])(_this7.state, node, attrs);
         }));
@@ -20205,12 +20233,12 @@ function (_Emitter) {
   }, {
     key: "isActive",
     get: function get() {
-      return Object.entries(_objectSpread({}, this.activeMarks, this.activeNodes)).reduce(function (types, _ref8) {
+      return Object.entries(_objectSpread2({}, this.activeMarks, {}, this.activeNodes)).reduce(function (types, _ref8) {
         var _ref9 = _slicedToArray(_ref8, 2),
             name = _ref9[0],
             value = _ref9[1];
 
-        return _objectSpread({}, types, _defineProperty({}, name, function () {
+        return _objectSpread2({}, types, _defineProperty({}, name, function () {
           var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return value(attrs);
         }));
@@ -20341,13 +20369,13 @@ function () {
 
     _classCallCheck(this, Menu);
 
-    this.options = _objectSpread({}, {
+    this.options = _objectSpread2({}, {
       element: null,
       keepInBounds: true,
       onUpdate: function onUpdate() {
         return false;
       }
-    }, options);
+    }, {}, options);
     this.editorView = editorView;
     this.isActive = false;
     this.left = 0;
@@ -20374,7 +20402,12 @@ function () {
   }, {
     key: "update",
     value: function update(view, lastState) {
-      var state = view.state; // Don't do anything if the document/selection didn't change
+      var state = view.state;
+
+      if (view.composing) {
+        return;
+      } // Don't do anything if the document/selection didn't change
+
 
       if (lastState && lastState.doc.eq(state.doc) && lastState.selection.eq(state.selection)) {
         return;
@@ -20526,13 +20559,13 @@ function () {
 
     _classCallCheck(this, Menu);
 
-    this.options = _objectSpread({}, {
+    this.options = _objectSpread2({}, {
       resizeObserver: true,
       element: null,
       onUpdate: function onUpdate() {
         return false;
       }
-    }, options);
+    }, {}, options);
     this.editorView = editorView;
     this.isActive = false;
     this.top = 0; // the mousedown event is fired before blur so we can prevent it
@@ -32844,7 +32877,20 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   components: {
-    Editor: tiptap__WEBPACK_IMPORTED_MODULE_0__["Editor"]
+    EditorContent: tiptap__WEBPACK_IMPORTED_MODULE_0__["EditorContent"]
+  },
+  data: function data() {
+    return {
+      // Create an `Editor` instance with some default content. The editor is 
+      // then passed to the `EditorContent` component as a `prop`
+      editor: new tiptap__WEBPACK_IMPORTED_MODULE_0__["Editor"]({
+        content: '<p>This is just a boring paragraph</p>'
+      })
+    };
+  },
+  beforeDestroy: function beforeDestroy() {
+    // Always destroy your editor instance when it's no longer needed
+    this.editor.destroy();
   }
 });
 

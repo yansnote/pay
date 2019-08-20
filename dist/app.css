@@ -11143,7 +11143,7 @@ small,
 }
 
 body {
-  background: #F5F9FC;
+  background: #ffffff;
 }
 
 .wrapper {
@@ -11156,7 +11156,8 @@ body {
 
 .wrapper .sidebar {
   width: 250px;
-  background: #354052;
+  border-right: 1px solid #e0e0e0;
+  background: rgba(173, 223, 247, 0.5);
   height: 100%;
   color: white;
   position: fixed;
@@ -11206,7 +11207,7 @@ body {
 }
 
 .wrapper .sidebar .navigation ul li a {
-  color: #ced4da;
+  color: #0e0e0e;
   padding: 0.75rem 1.5rem;
   text-decoration: none;
 }
@@ -11214,6 +11215,14 @@ body {
 .wrapper .sidebar .navigation ul li a:hover {
   background: #2D3646;
   color: #e9ecef;
+}
+
+.wrapper .sidebar .navigation ul li .active {
+  border-left: 0.25rem solid #a0a0a0;
+}
+
+.wrapper .sidebar .navigation ul li .active a {
+  padding-left: 1.25rem;
 }
 
 .wrapper .sidebar #sidebar-profile {

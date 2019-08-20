@@ -1,6 +1,8 @@
 .sidebar {
     width: $sidebar-width;
-    background: $sidebar-color;
+    border-right: 1px solid #e0e0e0;
+    //background: $sidebar-color;
+    background: $primary-50;
     height: 100%;
     color: white;
     position: fixed;
@@ -48,13 +50,21 @@
                 list-style: none;
         
                 a {
-                    color: #ced4da;
+                    color: #0e0e0e;
                     padding: 0.75rem 1.5rem;
                     text-decoration: none;
         
                     &:hover {
                         background: #2D3646;
                         color: #e9ecef;
+                    }
+                }
+
+                .active {
+                    border-left: 0.25rem solid #a0a0a0;
+                    
+                    a {
+                        padding-left: 1.25rem;
                     }
                 }
             }
