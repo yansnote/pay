@@ -1,3 +1,4 @@
+// Override type system
 @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
 @import url('https://mmwebfonts.comquas.com/fonts/?font=notosan');
 $nunito: 'Nunito', sans-serif;
@@ -5,6 +6,7 @@ $notosan: 'notosan', sans-serif;
 
 $font-family-sans-serif: $nunito, $notosan;
 
+// Override Color System
 $theme-colors: (
   "pay-100": #f1f7fe,
   "pay-200": #e3effd,
@@ -17,6 +19,6 @@ $theme-colors: (
   "pay-900": #80b8f4
 );
 
-$sidebar-color: #f0f3f8;
+$enable-rounded: false;
 
 $sidebar-width: 250px;

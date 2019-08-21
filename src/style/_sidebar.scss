@@ -46,21 +46,20 @@
                 list-style: none;
         
                 a {
-                    color: #0e0e0e;
+                    color: $gray-800;
                     padding: 0.75rem 1.5rem;
                     text-decoration: none;
         
                     &:hover {
-                        background: theme-color-level(pay-300);
+                        background: theme-color(pay-300);
                     }
                 }
 
                 .active {
-                    border-left: 0.25rem solid #a0a0a0;
-                    
-                    a {
-                        padding-left: 1.25rem;
-                    }
+                    color: black;
+                    border-right: 0.25rem solid theme-color-level(pay-400, 2);
+                    padding-right: 1.25rem;
+                    background: theme-color-levle(pay-100, 1);
                 }
             }
         }
