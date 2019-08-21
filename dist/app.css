@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Nunito&display=swap);@import url(https://fonts.googleapis.com/icon?family=Material+Icons);@import url(https://mmwebfonts.comquas.com/fonts/?font=notosan);@charset "UTF-8";
+@import url(https://fonts.googleapis.com/css?family=Nunito&display=swap);@import url(https://mmwebfonts.comquas.com/fonts/?font=notosan);@import url(https://fonts.googleapis.com/icon?family=Material+Icons);@charset "UTF-8";
 
 /*!
  * Bootstrap v4.3.1 (https://getbootstrap.com/)
@@ -38,7 +38,7 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-sans-serif: ("Nunito", sans-serif), ("notosan", sans-serif);
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
@@ -70,7 +70,7 @@ section {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: "Nunito", sans-serif, "notosan", sans-serif;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
@@ -6719,7 +6719,7 @@ a.close.disabled {
   z-index: 1070;
   display: block;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: "Nunito", sans-serif, "notosan", sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -6844,7 +6844,7 @@ a.close.disabled {
   z-index: 1060;
   display: block;
   max-width: 276px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: "Nunito", sans-serif, "notosan", sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -11318,24 +11318,6 @@ a.text-pay-300:focus {
     color: inherit;
     border-color: #dee2e6;
   }
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: "Nunito", "Notosan Myanmar", sans-serif;
-}
-
-small,
-.small {
-  font-family: "Notosan Myanmar", sans-serif;
-}
-
-body {
-  background: #ffffff;
 }
 
 .wrapper {

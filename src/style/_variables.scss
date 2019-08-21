@@ -1,11 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
+@import url('https://mmwebfonts.comquas.com/fonts/?font=notosan');
+$nunito: 'Nunito', sans-serif;
+$notosan: 'notosan', sans-serif;
+
+$font-family-sans-serif: $nunito, $notosan;
+
 $theme-colors: (
   "pay-0": #e0f7fa,
   "pay-100": #80deea,
   "pay-200": #26c6da,
   "pay-300": #00acc1
 );
-
-$base-color: #ffffff;
 
 $primary-color: #addff7;
 $primary-50: rgba($primary-color, 0.50);

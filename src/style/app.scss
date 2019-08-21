@@ -2,27 +2,7 @@
 
 @import '~bootstrap/scss/bootstrap';
 
-@import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-@import url('https://mmwebfonts.comquas.com/fonts/?font=notosan');
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-family: 'Nunito', 'Notosan Myanmar', sans-serif;
-}
-
-small,
-.small {
-    font-family: 'Notosan Myanmar', sans-serif;
-}
-
-body {
-    background: $base-color;
-}
 
 .wrapper {
     align-items: stretch;
