@@ -1,10 +1,8 @@
 .sidebar {
-    
     width: $sidebar-width;
-    border-right: 1px solid #e0e0e0;
-    background: theme-color("pay-0");
+    border-right: 1px solid $gray-300;
+    background: theme-color-level(pay-100, -2);
     height: 100%;
-    color: white;
     position: fixed;
     top: 0;
     left: 0;
@@ -21,13 +19,11 @@
         }
 
         a {
-            color: #ced4da;
             top: 28px;
             right: 0;
 
             & :hover {
                 text-decoration: none;
-                color: white;
             }
 
             i {
@@ -55,7 +51,7 @@
                     text-decoration: none;
         
                     &:hover {
-                        background: theme-color-level(pay-0, 3);
+                        background: theme-color-level(pay-300);
                     }
                 }
 

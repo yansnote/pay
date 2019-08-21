@@ -6,14 +6,16 @@ $notosan: 'notosan', sans-serif;
 $font-family-sans-serif: $nunito, $notosan;
 
 $theme-colors: (
-  "pay-0": #e0f7fa,
-  "pay-100": #80deea,
-  "pay-200": #26c6da,
-  "pay-300": #00acc1
+  "pay-100": #f1f7fe,
+  "pay-200": #e3effd,
+  "pay-300": #d5e7fb,
+  "pay-400": #c7dffa,
+  "pay-500": #b9d7f9,
+  "pay-600": #aacff8,
+  "pay-700": #9cc7f6,
+  "pay-800": #8ec0f5,
+  "pay-900": #80b8f4
 );
-
-$primary-color: #addff7;
-$primary-50: rgba($primary-color, 0.50);
 
 $sidebar-color: #f0f3f8;
 
