@@ -12004,11 +12004,11 @@ a.text-pay-900:focus {
 
 .wrapper .content {
   width: 100%;
-  padding: 20px 35px 20px 285px;
+  padding-left: 250px;
 }
 
 .wrapper .content .content-title {
-  padding: 0.3em 0;
+  padding: 0.3em 0.2em;
 }
 
 .wrapper .content .content-body .note-list {
