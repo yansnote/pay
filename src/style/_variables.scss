@@ -1,10 +1,12 @@
 // Override type system
 @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
-@import url('https://mmwebfonts.comquas.com/fonts/?font=notosan');
-$nunito: 'Nunito', sans-serif;
-$notosan: 'notosan', sans-serif;
+@import url('https://mmwebfonts.comquas.com/fonts/?font=pyidaungsu');
+$nunito: 'Nunito';
+$pyidaungsu: 'pyidaungsu';
 
-$font-family-sans-serif: $nunito, $notosan;
+$font-family-sans-serif: $nunito, $pyidaungsu, sans-serif;
+
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 // Override Color System
 $theme-colors: (
