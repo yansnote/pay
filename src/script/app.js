@@ -1,22 +1,24 @@
+/* import Vue from 'vue';
+import CKEditor from '@ckeditor/ckeditor5-vue';
+import BuildBalloon from '@ckeditor/ckeditor5-build-balloon-block'
 
+Vue.use(CKEditor)
 
-import { Editor, EditorContent } from 'tiptap'
+var payvue = new Vue({
+el: '#payvue',
+data: {
+    editor: BuildBalloon,
+    editorData: '<p>Content of the editor.</p>',
+    editorConfig: {
+        // The configuration of the editor.
+    }
+  }
+}); */
 
-export default {
-  components: {
-      EditorContent,
-  },
-  data() {
-      return {
-      // Create an `Editor` instance with some default content. The editor is 
-      // then passed to the `EditorContent` component as a `prop`
-      editor: new Editor({
-          content: '<p>This is just a boring paragraph</p>',
-      }),
-      }
-  },
-  beforeDestroy() {
-      // Always destroy your editor instance when it's no longer needed
-      this.editor.destroy()
-  },
-}
+import Vue from 'vue';
+import tiptap from './components/tiptap.vue';
+
+new Vue({
+    el: '#payvue',
+    components: { tiptap }
+});
