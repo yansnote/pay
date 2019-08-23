@@ -12007,9 +12007,18 @@ a.text-pay-900:focus {
   padding-left: 250px;
 }
 
+.wrapper .content .content-header h1 {
+  color: #343a40;
+}
+
+.wrapper .content .content-body .note a {
+  color: #212529;
+}
+
 .wrapper .content .content-body .note a:hover {
   text-decoration: none;
   font-weight: 500;
+  color: #495057;
 }
 
 .wrapper .content .content-body .note .note-info {
