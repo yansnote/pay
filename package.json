@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/yansnote/pay#readme",
   "dependencies": {
+    "@ckeditor/ckeditor5-build-balloon-block": "^12.3.1",
+    "@ckeditor/ckeditor5-vue": "^1.0.0-beta.2",
     "laravel-mix": "^4.1.2"
   },
   "devDependencies": {
