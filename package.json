@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/yansnote/pay#readme",
   "dependencies": {
-    "laravel-mix": "^4.1.2"
+    "laravel-mix": "^4.1.2",
+    "tiptap-extensions": "^1.27.0"
   },
   "devDependencies": {
     "@ckeditor/ckeditor5-build-balloon-block": "^12.3.1",
