@@ -16,62 +16,9 @@
 <body>
 
     <div id="main">
-        <div class="wrapper">
+        <div id="payvue" class="wrapper">
 
-            <aside class="sidebar d-none d-md-block">
-                <header class="sidebar-title">
-                    
-                    <h5 class="mt-1">Yan's Note</h5>
-
-                    <a href="#" class="position-absolute" target="_blank">
-                        <i class="material-icons mr-3">launch</i>
-                    </a>
-
-                </header> <!-- end of sidebar-title -->
-
-                <nav class="navigation">
-                    <ul>
-                        <li>
-                            <a href="notes.html" class="d-flex active">
-                                <i class="material-icons mr-3">create</i>
-                                Notes
-                            </a>
-                        </li>
-                        <li>
-                            <a href="tags.html" class="d-flex">
-                                <i class="material-icons mr-3">local_offer</i>
-                                Tags
-                            </a>
-                        </li>
-                        <li>
-                            <a href="profile.html" class="d-flex">
-                                <i class="material-icons mr-3">account_circle</i>
-                                Profile
-                            </a>
-                        </li>
-                        <li>
-                            <a href="settings.html" class="d-flex">
-                                <i class="material-icons mr-3">settings</i>
-                                Settings
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-
-                <div id="sidebar-profile">
-
-                    <div class="media">
-                        <img src="../dist/images/profile.png" alt="Profile" class="rounded-circle mr-2" width="45" height="45">
-                        <div class="media-body">
-                            <h5 class="m-0">
-                                <a href="#">User name</a>
-                            </h5>
-                            Administractor
-                        </div>
-                    </div>
-
-                </div> <!-- end of sidebar-profile -->
-            </aside> <!-- end of sidebar -->
+            <sidebar></sidebar>
 
             <aside class="content">
                 <header class="content-header border-bottom d-flex justify-content-between align-items-center px-5 py-2">
@@ -83,7 +30,7 @@
                     <a href="note.html" class="btn btn-pay-600">New Note</a>
                 </header> <!-- end of content-title -->
 
-                <main id="payvue" class="content-body px-5 pt-3 pb-5">
+                <main class="content-body px-5 pt-3 pb-5">
 
                     <tiptap></tiptap>
 
