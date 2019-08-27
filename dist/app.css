@@ -11902,6 +11902,14 @@ a.text-pay-900:focus {
   }
 }
 
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
 .wrapper {
   align-items: stretch;
   width: 100%;

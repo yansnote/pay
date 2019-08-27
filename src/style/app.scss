@@ -2,6 +2,14 @@
 
 @import '~bootstrap/scss/bootstrap';
 
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
 .wrapper {
     align-items: stretch;
     width: 100%;
@@ -45,4 +53,8 @@
             }
         }
     }
+}
+
+.login {
+    
 }
