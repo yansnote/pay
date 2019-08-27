@@ -101,7 +101,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-// Import the editor
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -110,14 +109,11 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      editor: null
+      editor: new tiptap__WEBPACK_IMPORTED_MODULE_0__["Editor"]({
+        content: '<p>Initial editor content</p>',
+        extensions: [new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["Heading"](), new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["Bold"](), new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["Italic"](), new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["Link"](), new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["HardBreak"]()]
+      })
     };
-  },
-  mounted: function mounted() {
-    this.editor = new tiptap__WEBPACK_IMPORTED_MODULE_0__["Editor"]({
-      content: '<p>This is just a boring paragraph</p>',
-      extensions: [new tiptap_extensions__WEBPACK_IMPORTED_MODULE_1__["Heading"]()]
-    });
   },
   beforeDestroy: function beforeDestroy() {
     this.editor.destroy();
@@ -29347,97 +29343,189 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("aside", { staticClass: "sidebar d-none d-md-block" }, [
+    _vm._m(0),
+    _vm._v(" "),
+    _c("nav", { staticClass: "navigation" }, [
+      _c("li", [
+        _c(
+          "a",
+          {
+            staticClass: "d-flex align-items-center active",
+            attrs: { href: "notes.html" }
+          },
+          [
+            _c(
+              "svg",
+              {
+                staticClass: "mr-2",
+                attrs: {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "22",
+                  height: "22",
+                  viewBox: "0 0 24 24"
+                }
+              },
+              [
+                _c("path", { attrs: { fill: "none", d: "M0 0h24v24H0V0z" } }),
+                _c("path", {
+                  attrs: {
+                    d:
+                      "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34l-3.75-3.75-2.53 2.54 3.75 3.75 2.53-2.54z"
+                  }
+                })
+              ]
+            ),
+            _vm._v(
+              "\n                            Notes\n                        "
+            )
+          ]
+        )
+      ]),
+      _vm._v(" "),
+      _c("li", [
+        _c(
+          "a",
+          {
+            staticClass: "d-flex align-items-center",
+            attrs: { href: "tags.html" }
+          },
+          [
+            _c(
+              "svg",
+              {
+                staticClass: "mr-2",
+                attrs: {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "22",
+                  height: "22",
+                  viewBox: "0 0 24 24"
+                }
+              },
+              [
+                _c("path", { attrs: { fill: "none", d: "M0 0h24v24H0V0z" } }),
+                _c("path", {
+                  attrs: {
+                    d:
+                      "M22.83 12.99L11.83 2H2v9.83l10.99 10.99 9.84-9.83zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"
+                  }
+                })
+              ]
+            ),
+            _vm._v(
+              "\n                            Tags\n                        "
+            )
+          ]
+        )
+      ]),
+      _vm._v(" "),
+      _c("li", [
+        _c(
+          "a",
+          {
+            staticClass: "d-flex align-items-center",
+            attrs: { href: "profile.html" }
+          },
+          [
+            _c(
+              "svg",
+              {
+                staticClass: "mr-2",
+                attrs: {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "22",
+                  height: "22",
+                  viewBox: "0 0 24 24"
+                }
+              },
+              [
+                _c("path", { attrs: { fill: "none", d: "M0 0h24v24H0V0z" } }),
+                _c("path", {
+                  attrs: {
+                    d:
+                      "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                  }
+                })
+              ]
+            ),
+            _vm._v(
+              "\n                            Profile\n                        "
+            )
+          ]
+        )
+      ]),
+      _vm._v(" "),
+      _c("li", [
+        _c(
+          "a",
+          {
+            staticClass: "d-flex align-items-center",
+            attrs: { href: "settings.html" }
+          },
+          [
+            _c(
+              "svg",
+              {
+                staticClass: "mr-2",
+                attrs: {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "22",
+                  height: "22",
+                  viewBox: "0 0 24 24"
+                }
+              },
+              [
+                _c("path", { attrs: { fill: "none", d: "M0 0h24v24H0V0z" } }),
+                _c("path", {
+                  attrs: {
+                    d:
+                      "M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"
+                  }
+                })
+              ]
+            ),
+            _vm._v(
+              "\n                            Settings\n                        "
+            )
+          ]
+        )
+      ])
+    ]),
+    _vm._v(" "),
+    _vm._m(1)
+  ])
 }
 var staticRenderFns = [
   function() {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("aside", { staticClass: "sidebar d-none d-md-block" }, [
-      _c("header", { staticClass: "sidebar-title" }, [
-        _c("h5", { staticClass: "mt-1" }, [_vm._v("Yan's Note")]),
-        _vm._v(" "),
-        _c(
-          "a",
-          {
-            staticClass: "position-absolute",
-            attrs: { href: "#", target: "_blank" }
-          },
-          [_c("i", { staticClass: "material-icons mr-3" }, [_vm._v("launch")])]
-        )
-      ]),
+    return _c("header", { staticClass: "sidebar-title" }, [
+      _c("h5", { staticClass: "mt-1" }, [_vm._v("Yan's Note")]),
       _vm._v(" "),
-      _c("nav", { staticClass: "navigation" }, [
-        _c("ul", [
-          _c("li", [
-            _c(
-              "a",
-              { staticClass: "d-flex active", attrs: { href: "notes.html" } },
-              [
-                _c("i", { staticClass: "material-icons mr-3" }, [
-                  _vm._v("create")
-                ]),
-                _vm._v(
-                  "\n                            Notes\n                        "
-                )
-              ]
-            )
+      _c(
+        "a",
+        {
+          staticClass: "position-absolute",
+          attrs: { href: "#", target: "_blank" }
+        },
+        [_c("i", { staticClass: "material-icons mr-3" }, [_vm._v("launch")])]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "sidebar-profile" } }, [
+      _c("div", { staticClass: "media" }, [
+        _c("div", { staticClass: "media-body" }, [
+          _c("h5", { staticClass: "m-0" }, [
+            _c("a", { attrs: { href: "#" } }, [_vm._v("User name")])
           ]),
-          _vm._v(" "),
-          _c("li", [
-            _c("a", { staticClass: "d-flex", attrs: { href: "tags.html" } }, [
-              _c("i", { staticClass: "material-icons mr-3" }, [
-                _vm._v("local_offer")
-              ]),
-              _vm._v(
-                "\n                            Tags\n                        "
-              )
-            ])
-          ]),
-          _vm._v(" "),
-          _c("li", [
-            _c(
-              "a",
-              { staticClass: "d-flex", attrs: { href: "profile.html" } },
-              [
-                _c("i", { staticClass: "material-icons mr-3" }, [
-                  _vm._v("account_circle")
-                ]),
-                _vm._v(
-                  "\n                            Profile\n                        "
-                )
-              ]
-            )
-          ]),
-          _vm._v(" "),
-          _c("li", [
-            _c(
-              "a",
-              { staticClass: "d-flex", attrs: { href: "settings.html" } },
-              [
-                _c("i", { staticClass: "material-icons mr-3" }, [
-                  _vm._v("settings")
-                ]),
-                _vm._v(
-                  "\n                            Settings\n                        "
-                )
-              ]
-            )
-          ])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("div", { attrs: { id: "sidebar-profile" } }, [
-        _c("div", { staticClass: "media" }, [
-          _c("div", { staticClass: "media-body" }, [
-            _c("h5", { staticClass: "m-0" }, [
-              _c("a", { attrs: { href: "#" } }, [_vm._v("User name")])
-            ]),
-            _vm._v(
-              "\n                        Administractor\n                    "
-            )
-          ])
+          _vm._v(
+            "\n                        Administractor\n                    "
+          )
         ])
       ])
     ])

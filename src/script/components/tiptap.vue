@@ -1,12 +1,11 @@
 <template>
-  
   <editor-content :editor="editor" />
 </template>
 
 <script>
-// Import the editor
-import { Editor, EditorContent } from 'tiptap'
-import { Heading } from 'tiptap-extensions'
+
+import { Editor, EditorContent, EditorMenuBubble } from 'tiptap'
+import { Heading, Bold, Italic, Link, HardBreak } from 'tiptap-extensions'
 
 export default {
   components: {
@@ -14,16 +13,17 @@ export default {
   },
   data() {
     return {
-      editor: null,
+      editor: new Editor({
+        content: '<p>Initial editor content</p>',
+        extensions: [
+          new Heading(),
+          new Bold(),
+          new Italic(),
+          new Link(),
+          new HardBreak()
+        ]
+      })
     }
-  },
-  mounted() {
-    this.editor = new Editor({
-      content: '<p>This is just a boring paragraph</p>',
-      extensions: [
-        new Heading()
-      ]
-    })
   },
   beforeDestroy() {
     this.editor.destroy()
