@@ -1,18 +1,63 @@
 <template>
-  <editor-content :editor="editor" />
+  <div class="editor">
+
+    <editor-menu-bubble :editor="editor" :keep-in-bounds="keepInBounds" v-slot="{ commands, isActive, menu }">
+
+      <div
+        class="menububble"
+        :class="{ 'is-active': menu.isActive }"
+        :style="`left: ${menu.left}px; bottom: ${menu.bottom}px;`"
+      >
+
+        <button
+          class="menububble__button"
+          :class="{ 'is-active': isActive.bold() }"
+          @click="commands.bold"
+        >
+          <i class="material-icons">
+format_bold
+</i>
+        </button>
+
+      </div>
+
+    </editor-menu-bubble>
+
+    <editor-content class="editor__content" :editor="editor" />
+
+  </div> <!-- end of editor -->
 </template>
 
 <script>
 
 import { Editor, EditorContent, EditorMenuBubble } from 'tiptap'
-import { Heading, Bold, Italic, Link, HardBreak } from 'tiptap-extensions'
+import {
+  Blockquote,
+  BulletList,
+  CodeBlock,
+  HardBreak,
+  Heading,
+  ListItem,
+  OrderedList,
+  TodoItem,
+  TodoList,
+  Bold,
+  Code,
+  Italic,
+  Link,
+  Strike,
+  Underline,
+  History,
+} from 'tiptap-extensions'
 
 export default {
   components: {
     EditorContent,
+    EditorMenuBubble,
   },
   data() {
     return {
+      keepInBounds: true,
       editor: new Editor({
         content: '<p>Initial editor content</p>',
         extensions: [
