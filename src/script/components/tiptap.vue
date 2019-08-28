@@ -14,9 +14,23 @@
           :class="{ 'is-active': isActive.bold() }"
           @click="commands.bold"
         >
-          <i class="material-icons">
-format_bold
-</i>
+          <i class="material-icons">format_bold</i>
+        </button>
+
+        <button
+          class="menububble__button"
+          :class="{ 'is-active': isActive.italic() }"
+          @click="commands.italic"
+        >
+          <i class="material-icons">format_italic</i>
+        </button>
+
+        <button
+          class="menububble__button"
+          :class="{ 'is-active': isActive.blockquote() }"
+          @click="commands.blockquote"
+        >
+          <i class="material-icons">format_quote</i>
         </button>
 
       </div>
@@ -65,7 +79,10 @@ export default {
           new Bold(),
           new Italic(),
           new Link(),
-          new HardBreak()
+          new HardBreak(),
+          new Code(),
+          new Blockquote(),
+          new Link()
         ]
       })
     }
